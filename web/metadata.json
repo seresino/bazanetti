@@ -1,0 +1,6 @@
+{
+  "name": "Bazanetti Jewellery & Objects",
+  "description": "Editorial jewellery and bespoke design studio platform for Bazanetti, featuring Shop, Works portfolio, Vault archive, and custom Order Form.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

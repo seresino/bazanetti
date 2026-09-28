@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Neue Brücke';
+  src: url('/fonts/NeueBruecke-Regular.woff2') format('woff2'),
+       url('/fonts/NeueBruecke-Regular.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Neue Brucke';
+  src: url('/fonts/NeueBruecke-Regular.woff2') format('woff2'),
+       url('/fonts/NeueBruecke-Regular.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Also map any residual Syne or Plus Jakarta calls directly to Neue Brücke so nothing escapes */
+@font-face {
+  font-family: 'Syne';
+  src: url('/fonts/NeueBruecke-Regular.woff2') format('woff2'),
+       url('/fonts/NeueBruecke-Regular.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/NeueBruecke-Regular.woff2') format('woff2'),
+       url('/fonts/NeueBruecke-Regular.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: 'Neue Brücke', 'Neue Brucke', sans-serif;
+  --font-display: 'Neue Brücke', 'Neue Brucke', sans-serif;
+}
+
+html, body, #root {
+  font-family: 'Neue Brücke', 'Neue Brucke', sans-serif !important;
+}
+
+/* Universal typography enforcement */
+h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select {
+  font-family: inherit;
+}
+
+/* Font Verification Test Mode */
+body.font-test-green *:not(svg):not(path):not(img):not(video):not(polygon):not(rect):not(circle):not(#font-diagnostic-banner):not(#font-diagnostic-banner *) {
+  color: #22c55e !important; /* Green: Neue Brücke is actively loaded & in use */
+}
+
+body.font-test-red *:not(svg):not(path):not(img):not(video):not(polygon):not(rect):not(circle):not(#font-diagnostic-banner):not(#font-diagnostic-banner *) {
+  color: #ef4444 !important; /* Red: Fallback font is being used */
+}
