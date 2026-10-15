@@ -22,9 +22,30 @@ export const workType = defineType({
     }),
     defineField({
       name: 'gallery',
-      title: 'Gallery Images',
+      title: 'Gallery Media',
       type: 'array',
-      of: [{type: 'image', options: {hotspot: true}}],
+      of: [
+        {type: 'image', options: {hotspot: true}},
+        defineField({
+          name: 'videoFile',
+          title: 'Video (Upload)',
+          type: 'file',
+          options: {accept: 'video/*'},
+        }),
+        defineField({
+          name: 'videoLink',
+          title: 'Video (External URL — mp4/webm, YouTube or Vimeo)',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'url',
+              title: 'Video URL',
+              type: 'url',
+              validation: (Rule) => Rule.required(),
+            }),
+          ],
+        }),
+      ],
     }),
     defineField({name: 'description', title: 'Description', type: 'text'}),
     defineField({name: 'materials', title: 'Materials', type: 'array', of: [{type: 'string'}]}),

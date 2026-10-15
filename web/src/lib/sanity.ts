@@ -1,10 +1,10 @@
-import { createClient } from '@sanity/client';
-import imageUrlBuilder from '@sanity/image-url';
-import { Project, VaultItem } from '../types';
+import { createClient } from "@sanity/client";
+import imageUrlBuilder from "@sanity/image-url";
+import { GalleryMedia, Project, VaultItem } from "../types";
 
-export const projectId = import.meta.env.VITE_SANITY_PROJECT_ID || 'hp05jmwr';
-export const dataset = import.meta.env.VITE_SANITY_DATASET || 'production';
-export const apiVersion = '2024-03-01';
+export const projectId = import.meta.env.VITE_SANITY_PROJECT_ID || "hp05jmwr";
+export const dataset = import.meta.env.VITE_SANITY_DATASET || "production";
+export const apiVersion = "2024-03-01";
 
 export const sanityClient = createClient({
   projectId,
@@ -33,6 +33,7 @@ export async function fetchSanityWorks(): Promise<SanityFetchResult<Project>> {
   try {
     const query = `*[_type in ["work", "project"]] | order(year desc, _createdAt desc) {
       _id,
+      "slug": coalesce(slug.current, _id),
       title,
       category,
       badgeText,
@@ -47,6 +48,11 @@ export async function fetchSanityWorks(): Promise<SanityFetchResult<Project>> {
       "imageUrl": image.asset->url,
       gallery,
       "galleryUrls": gallery[].asset->url,
+      "galleryMedia": gallery[] {
+        "_type": @._type,
+        "url": coalesce(url, asset->url),
+        "mimeType": asset->mimeType
+      },
       detailImages,
       "detailImageUrls": detailImages[].asset->url,
       tags,
@@ -56,7 +62,9 @@ export async function fetchSanityWorks(): Promise<SanityFetchResult<Project>> {
     const rawData = await sanityClient.fetch(query);
 
     if (!Array.isArray(rawData)) {
-      throw new Error(`Unexpected response format from Sanity (received ${typeof rawData})`);
+      throw new Error(
+        `Unexpected response format from Sanity (received ${typeof rawData})`,
+      );
     }
 
     if (rawData.length === 0) {
@@ -77,47 +85,78 @@ export async function fetchSanityWorks(): Promise<SanityFetchResult<Project>> {
         try {
           coverImg = urlFor(item.coverImage).width(1200).url();
         } catch {
-          coverImg = '';
+          coverImg = "";
         }
       }
       if (!coverImg && item.image) {
         try {
           coverImg = urlFor(item.image).width(1200).url();
         } catch {
-          coverImg = '';
+          coverImg = "";
         }
       }
 
-      // Resolve detail/gallery images
-      let detailImgs: string[] = [];
-      if (Array.isArray(item.galleryUrls) && item.galleryUrls.length > 0) {
-        detailImgs = item.galleryUrls.filter(Boolean);
-      } else if (Array.isArray(item.detailImageUrls) && item.detailImageUrls.length > 0) {
-        detailImgs = item.detailImageUrls.filter(Boolean);
-      } else if (Array.isArray(item.gallery)) {
-        detailImgs = item.gallery
-          .map((img: any) => {
-            try {
-              return urlFor(img).width(1200).url();
-            } catch {
-              return '';
-            }
-          })
-          .filter(Boolean);
+      // Resolve detail/gallery media (images, uploaded video files, video links)
+      let detailMedia: GalleryMedia[] = [];
+      if (Array.isArray(item.galleryMedia) && item.galleryMedia.length > 0) {
+        detailMedia = item.galleryMedia
+          .map((m: any) => ({
+            type:
+              m?.mimeType?.startsWith("video/") ||
+              ["file", "videoFile", "videoLink"].includes(m?._type)
+                ? ("video" as const)
+                : ("image" as const),
+            url: m?.url || "",
+          }))
+          .filter((m: GalleryMedia) => Boolean(m.url));
+      }
+
+      if (detailMedia.length === 0) {
+        // Legacy fallbacks: plain image URL arrays
+        let detailImgs: string[] = [];
+        if (Array.isArray(item.galleryUrls) && item.galleryUrls.length > 0) {
+          detailImgs = item.galleryUrls.filter(Boolean);
+        } else if (
+          Array.isArray(item.detailImageUrls) &&
+          item.detailImageUrls.length > 0
+        ) {
+          detailImgs = item.detailImageUrls.filter(Boolean);
+        } else if (Array.isArray(item.gallery)) {
+          detailImgs = item.gallery
+            .map((img: any) => {
+              try {
+                return urlFor(img).width(1200).url();
+              } catch {
+                return "";
+              }
+            })
+            .filter(Boolean);
+        }
+        detailMedia = detailImgs.map((url) => ({ type: "image", url }));
       }
 
       return {
         id: item._id || `sanity-project-${index}`,
-        title: item.title || 'Untitled Work',
-        category: item.badgeText || item.category || 'AWFC ● Champions League',
-        client: item.client || 'Bazanetti Atelier',
-        year: item.year ? String(item.year) : new Date().getFullYear().toString(),
-        coverImage: coverImg || '',
-        heroImage: coverImg || '',
-        description: item.description || (Array.isArray(item.materials) ? item.materials.join(', ') : ''),
-        detailImages: detailImgs.length > 0 ? detailImgs : (coverImg ? [coverImg] : []),
-        tags: Array.isArray(item.tags) ? item.tags : ['Bespoke', 'Jewellery'],
-        aspectRatio: item.aspectRatio || (index === 1 ? 'tall' : 'square'),
+        slug: item.slug || item._id || `sanity-project-${index}`,
+        title: item.title || "Untitled Work",
+        category: item.badgeText || item.category || "AWFC ● Champions League",
+        client: item.client || "Bazanetti Atelier",
+        year: item.year
+          ? String(item.year)
+          : new Date().getFullYear().toString(),
+        coverImage: coverImg || "",
+        heroImage: coverImg || "",
+        description:
+          item.description ||
+          (Array.isArray(item.materials) ? item.materials.join(", ") : ""),
+        detailMedia:
+          detailMedia.length > 0
+            ? detailMedia
+            : coverImg
+              ? [{ type: "image" as const, url: coverImg }]
+              : [],
+        tags: Array.isArray(item.tags) ? item.tags : ["Bespoke", "Jewellery"],
+        aspectRatio: item.aspectRatio || (index === 1 ? "tall" : "square"),
       };
     });
 
@@ -130,7 +169,10 @@ export async function fetchSanityWorks(): Promise<SanityFetchResult<Project>> {
       dataset,
     };
   } catch (err: any) {
-    const errorMsg = err?.message || String(err) || 'Unknown error occurred while contacting Sanity';
+    const errorMsg =
+      err?.message ||
+      String(err) ||
+      "Unknown error occurred while contacting Sanity";
     return {
       data: [],
       loading: false,
@@ -143,7 +185,9 @@ export async function fetchSanityWorks(): Promise<SanityFetchResult<Project>> {
 }
 
 // Fetch Vault items from Sanity without mock fallback
-export async function fetchSanityVault(): Promise<SanityFetchResult<VaultItem>> {
+export async function fetchSanityVault(): Promise<
+  SanityFetchResult<VaultItem>
+> {
   try {
     const query = `*[_type in ["vaultItem", "vault"]] | order(year desc, _createdAt desc) {
       _id,
@@ -157,13 +201,17 @@ export async function fetchSanityVault(): Promise<SanityFetchResult<VaultItem>> 
       image,
       "imageUrl": image.asset->url,
       coverImage,
-      "coverImageUrl": coverImage.asset->url
+      "coverImageUrl": coverImage.asset->url,
+      model3d,
+      "model3dUrl": coalesce(model3d.asset->url, model.asset->url, glb.asset->url, file.asset->url, asset3d.asset->url)
     }`;
 
     const rawData = await sanityClient.fetch(query);
 
     if (!Array.isArray(rawData)) {
-      throw new Error(`Unexpected response format from Sanity (received ${typeof rawData})`);
+      throw new Error(
+        `Unexpected response format from Sanity (received ${typeof rawData})`,
+      );
     }
 
     if (rawData.length === 0) {
@@ -183,27 +231,33 @@ export async function fetchSanityVault(): Promise<SanityFetchResult<VaultItem>> 
         try {
           img = urlFor(item.image).width(800).url();
         } catch {
-          img = '';
+          img = "";
         }
       }
       if (!img && item.coverImage) {
         try {
           img = urlFor(item.coverImage).width(800).url();
         } catch {
-          img = '';
+          img = "";
         }
       }
 
-      const materialStr = item.material || (Array.isArray(item.materials) ? item.materials.join(', ') : 'Solid 18ct Gold');
+      const materialStr =
+        item.material ||
+        (Array.isArray(item.materials)
+          ? item.materials.join(", ")
+          : "Solid 18ct Gold");
 
       return {
         id: item._id || `sanity-vault-${index}`,
-        code: item.code || `BZ-VLT-${String(index + 1).padStart(2, '0')}`,
-        title: item.title || 'Archival Vault Piece',
-        year: item.year ? String(item.year) : '2024',
+        code: item.code || `BZ-VLT-${String(index + 1).padStart(2, "0")}`,
+        title: item.title || "Archival Vault Piece",
+        year: item.year ? String(item.year) : "2024",
         material: materialStr,
-        image: img || '',
-        edition: item.edition || item.status || 'Private Collection / One of One',
+        image: img || "",
+        edition:
+          item.edition || item.status || "Private Collection / One of One",
+        model3dUrl: item.model3dUrl || "",
       };
     });
 
@@ -216,7 +270,10 @@ export async function fetchSanityVault(): Promise<SanityFetchResult<VaultItem>> 
       dataset,
     };
   } catch (err: any) {
-    const errorMsg = err?.message || String(err) || 'Unknown error occurred while contacting Sanity';
+    const errorMsg =
+      err?.message ||
+      String(err) ||
+      "Unknown error occurred while contacting Sanity";
     return {
       data: [],
       loading: false,
@@ -233,24 +290,30 @@ export interface BrandIcons {
   info: string | null;
   works: string | null;
   vault: string | null;
+  rings: string | null;
 }
 
 export interface BrandSettings {
   landingBackgroundGif: string | null;
   monogramEmblem: string | null;
   wordmarkLogo: string | null;
+  bioText: string | null;
   emailAddress?: string | null;
   instagramUrl?: string | null;
   icons: BrandIcons;
 }
 
 // Fetch Brand, Identity, and Navigation Icons from Sanity
-export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; error: string | null }> {
+export async function fetchBrandSettings(): Promise<{
+  brand: BrandSettings;
+  error: string | null;
+}> {
   const emptyIcons: BrandIcons = {
     shop: null,
     info: null,
     works: null,
     vault: null,
+    rings: null,
   };
 
   try {
@@ -263,6 +326,7 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
         "monogramEmblemUrl": coalesce(monogramEmblem.asset->url, bLogo.asset->url, monogram.asset->url),
         wordmarkLogo,
         "wordmarkLogoUrl": coalesce(wordmarkLogo.asset->url, wordmark.asset->url),
+        bioText,
         emailAddress,
         instagramUrl,
         shopIcon,
@@ -273,6 +337,8 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
         "worksIconUrl": worksIcon.asset->url,
         vaultIcon,
         "vaultIconUrl": vaultIcon.asset->url,
+        ringsIcon,
+        "ringsIconUrl": ringsIcon.asset->url,
         "iconsArray": coalesce(brandIcons, icons, icon, brandGlyphs, glyphs, navIcons)[] {
           _id,
           _type,
@@ -295,7 +361,7 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
           asset
         }
       },
-      "standaloneIcons": *[_type in ["icon", "glyph", "navIcon", "brandIcon", "brandGlyph"] || lower(title) in ["shop", "info", "works", "vault"] || lower(name) in ["shop", "info", "works", "vault"]] {
+      "standaloneIcons": *[_type in ["icon", "glyph", "navIcon", "brandIcon", "brandGlyph"] || lower(title) in ["shop", "info", "works", "vault", "rings"] || lower(name) in ["shop", "info", "works", "vault", "rings"]] {
         _id,
         _type,
         name,
@@ -311,12 +377,16 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
     const result = await sanityClient.fetch(query);
     const data = result?.brand;
 
-    if (!data && (!result?.standaloneIcons || result.standaloneIcons.length === 0)) {
+    if (
+      !data &&
+      (!result?.standaloneIcons || result.standaloneIcons.length === 0)
+    ) {
       return {
         brand: {
           landingBackgroundGif: null,
           monogramEmblem: null,
           wordmarkLogo: null,
+          bioText: null,
           emailAddress: null,
           instagramUrl: null,
           icons: emptyIcons,
@@ -328,31 +398,45 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
     // Resolve landing background gif
     let bgGif = data?.landingBackgroundGifUrl || data?.backgroundGifUrl;
     if (!bgGif && data?.landingBackgroundGif) {
-      try { bgGif = urlFor(data.landingBackgroundGif).url(); } catch {}
+      try {
+        bgGif = urlFor(data.landingBackgroundGif).url();
+      } catch {}
     }
     if (!bgGif && data?.backgroundGif) {
-      try { bgGif = urlFor(data.backgroundGif).url(); } catch {}
+      try {
+        bgGif = urlFor(data.backgroundGif).url();
+      } catch {}
     }
 
     // Resolve monogram emblem (B logo)
     let emblem = data?.monogramEmblemUrl || data?.bLogoUrl || data?.monogramUrl;
     if (!emblem && data?.monogramEmblem) {
-      try { emblem = urlFor(data.monogramEmblem).url(); } catch {}
+      try {
+        emblem = urlFor(data.monogramEmblem).url();
+      } catch {}
     }
     if (!emblem && data?.bLogo) {
-      try { emblem = urlFor(data.bLogo).url(); } catch {}
+      try {
+        emblem = urlFor(data.bLogo).url();
+      } catch {}
     }
     if (!emblem && data?.monogram) {
-      try { emblem = urlFor(data.monogram).url(); } catch {}
+      try {
+        emblem = urlFor(data.monogram).url();
+      } catch {}
     }
 
     // Resolve wordmark logo
     let wordmark = data?.wordmarkLogoUrl || data?.wordmarkUrl;
     if (!wordmark && data?.wordmarkLogo) {
-      try { wordmark = urlFor(data.wordmarkLogo).url(); } catch {}
+      try {
+        wordmark = urlFor(data.wordmarkLogo).url();
+      } catch {}
     }
     if (!wordmark && data?.wordmark) {
-      try { wordmark = urlFor(data.wordmark).url(); } catch {}
+      try {
+        wordmark = urlFor(data.wordmark).url();
+      } catch {}
     }
 
     // Resolve icons for shop, info, works, vault
@@ -361,6 +445,7 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
       info: data?.infoIconUrl || null,
       works: data?.worksIconUrl || null,
       vault: data?.vaultIconUrl || null,
+      rings: data?.ringsIconUrl || null,
     };
 
     const allIconItems = [
@@ -371,9 +456,9 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
     // Also check any extra array fields in brandSettings
     if (data) {
       for (const [key, val] of Object.entries(data)) {
-        if (Array.isArray(val) && key !== 'iconsArray') {
+        if (Array.isArray(val) && key !== "iconsArray") {
           for (const item of val) {
-            if (item && typeof item === 'object') {
+            if (item && typeof item === "object") {
               allIconItems.push(item);
             }
           }
@@ -383,27 +468,59 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
 
     for (const item of allIconItems) {
       if (!item) continue;
-      const label = (item.docName || item.name || item.title || item.key || item._id || '').toLowerCase().trim();
+      const label = (
+        item.docName ||
+        item.name ||
+        item.title ||
+        item.key ||
+        item._id ||
+        ""
+      )
+        .toLowerCase()
+        .trim();
       let iconUrl = item.iconUrl || item.url;
       if (!iconUrl && item.icon) {
-        try { iconUrl = urlFor(item.icon).url(); } catch {}
+        try {
+          iconUrl = urlFor(item.icon).url();
+        } catch {}
       }
       if (!iconUrl && item.image) {
-        try { iconUrl = urlFor(item.image).url(); } catch {}
+        try {
+          iconUrl = urlFor(item.image).url();
+        } catch {}
       }
       if (!iconUrl && item.asset) {
-        try { iconUrl = urlFor(item.asset).url(); } catch {}
+        try {
+          iconUrl = urlFor(item.asset).url();
+        } catch {}
       }
 
       if (iconUrl) {
-        if (!resolvedIcons.shop && (label === 'shop' || label.includes('shop'))) {
+        if (
+          !resolvedIcons.shop &&
+          (label === "shop" || label.includes("shop"))
+        ) {
           resolvedIcons.shop = iconUrl;
-        } else if (!resolvedIcons.info && (label === 'info' || label.includes('info'))) {
+        } else if (
+          !resolvedIcons.info &&
+          (label === "info" || label.includes("info"))
+        ) {
           resolvedIcons.info = iconUrl;
-        } else if (!resolvedIcons.works && (label === 'works' || label === 'work' || label.includes('work'))) {
+        } else if (
+          !resolvedIcons.works &&
+          (label === "works" || label === "work" || label.includes("work"))
+        ) {
           resolvedIcons.works = iconUrl;
-        } else if (!resolvedIcons.vault && (label === 'vault' || label.includes('vault'))) {
+        } else if (
+          !resolvedIcons.vault &&
+          (label === "vault" || label.includes("vault"))
+        ) {
           resolvedIcons.vault = iconUrl;
+        } else if (
+          !resolvedIcons.rings &&
+          (label === "rings" || label === "ring" || label.includes("ring"))
+        ) {
+          resolvedIcons.rings = iconUrl;
         }
       }
     }
@@ -413,6 +530,7 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
         landingBackgroundGif: bgGif || null,
         monogramEmblem: emblem || null,
         wordmarkLogo: wordmark || null,
+        bioText: data?.bioText || null,
         emailAddress: data?.emailAddress || null,
         instagramUrl: data?.instagramUrl || null,
         icons: resolvedIcons,
@@ -420,12 +538,13 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
       error: null,
     };
   } catch (err: any) {
-    console.warn('[Sanity] Could not fetch brand settings:', err);
+    console.warn("[Sanity] Could not fetch brand settings:", err);
     return {
       brand: {
         landingBackgroundGif: null,
         monogramEmblem: null,
         wordmarkLogo: null,
+        bioText: null,
         emailAddress: null,
         instagramUrl: null,
         icons: emptyIcons,
@@ -434,4 +553,3 @@ export async function fetchBrandSettings(): Promise<{ brand: BrandSettings; erro
     };
   }
 }
-

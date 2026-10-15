@@ -1,61 +1,98 @@
 @import "tailwindcss";
 
+/* Neue Brücke — only Regular was supplied, so map every weight to it */
 @font-face {
-  font-family: 'Neue Brücke';
-  src: url('/fonts/NeueBruecke-Regular.woff2') format('woff2'),
-       url('/fonts/NeueBruecke-Regular.woff') format('woff');
+  font-family: "Neue Brücke";
+  src: url("/fonts/NeueBrucke-Regular.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Neue Brucke';
-  src: url('/fonts/NeueBruecke-Regular.woff2') format('woff2'),
-       url('/fonts/NeueBruecke-Regular.woff') format('woff');
+  font-family: "Neue Brucke";
+  src: url("/fonts/NeueBrucke-Regular.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
-/* Also map any residual Syne or Plus Jakarta calls directly to Neue Brücke so nothing escapes */
+/* Neue Haas Grotesk Text Pro */
 @font-face {
-  font-family: 'Syne';
-  src: url('/fonts/NeueBruecke-Regular.woff2') format('woff2'),
-       url('/fonts/NeueBruecke-Regular.woff') format('woff');
-  font-weight: 100 900;
+  font-family: "Neue Haas Grotesk Text Pro";
+  src: url("/fonts/NHaasGroteskTXPro-55Rg.otf") format("opentype");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Plus Jakarta Sans';
-  src: url('/fonts/NeueBruecke-Regular.woff2') format('woff2'),
-       url('/fonts/NeueBruecke-Regular.woff') format('woff');
-  font-weight: 100 900;
+  font-family: "Neue Haas Grotesk Text Pro";
+  src: url("/fonts/NHaasGroteskTXPro-56It.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Neue Haas Grotesk Text Pro";
+  src: url("/fonts/NHaasGroteskTXPro-65Md.otf") format("opentype");
+  font-weight: 500;
   font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Neue Haas Grotesk Text Pro";
+  src: url("/fonts/NHaasGroteskTXPro-66MdIt.otf") format("opentype");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Neue Haas Grotesk Text Pro";
+  src: url("/fonts/NHaasGroteskTXPro-75Bd.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Neue Haas Grotesk Text Pro";
+  src: url("/fonts/NHaasGroteskTXPro-76BdIt.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
   font-display: swap;
 }
 
 @theme {
-  --font-sans: 'Neue Brücke', 'Neue Brucke', sans-serif;
-  --font-display: 'Neue Brücke', 'Neue Brucke', sans-serif;
+  --font-sans: "Neue Brücke", "Neue Brucke", sans-serif;
+  --font-display: "Neue Brücke", "Neue Brucke", sans-serif;
+  --font-haas: "Neue Haas Grotesk Text Pro", "Neue Haas Grotesk", sans-serif;
 }
 
-html, body, #root {
-  font-family: 'Neue Brücke', 'Neue Brucke', sans-serif !important;
+html,
+body,
+#root {
+  font-family: "Neue Brücke", "Neue Brucke", sans-serif !important;
 }
 
-/* Universal typography enforcement */
-h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select {
-  font-family: inherit;
-}
-
-/* Font Verification Test Mode */
-body.font-test-green *:not(svg):not(path):not(img):not(video):not(polygon):not(rect):not(circle):not(#font-diagnostic-banner):not(#font-diagnostic-banner *) {
-  color: #22c55e !important; /* Green: Neue Brücke is actively loaded & in use */
-}
-
-body.font-test-red *:not(svg):not(path):not(img):not(video):not(polygon):not(rect):not(circle):not(#font-diagnostic-banner):not(#font-diagnostic-banner *) {
-  color: #ef4444 !important; /* Red: Fallback font is being used */
+/* Universal typography enforcement — in @layer base so utilities can override it */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+  }
 }

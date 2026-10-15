@@ -1,0 +1,37 @@
+{
+  "version": 1.1,
+  "atDirectives": [
+    {
+      "name": "@theme",
+      "description": "Tailwind CSS v4: define theme configuration variables (colors, fonts, breakpoints, etc.)."
+    },
+    {
+      "name": "@utility",
+      "description": "Tailwind CSS v4: define a custom utility."
+    },
+    {
+      "name": "@source",
+      "description": "Tailwind CSS v4: register an additional source path for class detection."
+    },
+    {
+      "name": "@plugin",
+      "description": "Tailwind CSS v4: load a Tailwind plugin."
+    },
+    {
+      "name": "@variant",
+      "description": "Tailwind CSS v4: apply a variant to a block of styles."
+    },
+    {
+      "name": "@custom-variant",
+      "description": "Tailwind CSS v4: define a custom variant."
+    },
+    {
+      "name": "@reference",
+      "description": "Tailwind CSS v4: import theme/utility definitions without emitting them."
+    },
+    {
+      "name": "@config",
+      "description": "Tailwind CSS v4: load a legacy JS/TS config file."
+    }
+  ]
+}

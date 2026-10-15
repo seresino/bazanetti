@@ -1,6 +1,56 @@
-import React from 'react';
-import { Project } from '../types';
-import { ArrowLeft } from 'lucide-react';
+import React from "react";
+import { GalleryMedia, Project } from "../types";
+import { ArrowLeft } from "lucide-react";
+
+// YouTube/Vimeo links can't play in a <video> tag — convert to embed URLs
+function getVideoEmbedUrl(url: string): string | null {
+  const yt = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/,
+  );
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vm = url.match(/vimeo\.com\/(\d+)/);
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+  return null;
+}
+
+function GalleryAsset({
+  media,
+  fallbackUrl,
+  alt,
+}: {
+  media?: GalleryMedia;
+  fallbackUrl?: string;
+  alt: string;
+}) {
+  const url = media?.url || fallbackUrl;
+  if (!url) return null;
+  if (media?.type === "video") {
+    const embed = getVideoEmbedUrl(url);
+    if (embed) {
+      return (
+        <iframe
+          src={embed}
+          title={alt}
+          className="w-full aspect-video border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      );
+    }
+    return (
+      <video
+        src={url}
+        className="w-full h-auto"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+      />
+    );
+  }
+  return <img src={url} alt={alt} className="w-full h-auto" loading="lazy" />;
+}
 
 interface ProjectDetailViewProps {
   project: Project;
@@ -9,8 +59,7 @@ interface ProjectDetailViewProps {
 
 export function ProjectDetailView({ project, onBack }: ProjectDetailViewProps) {
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 animate-fade-in">
-      
+    <div className="w-full px-4 sm:px-6 py-6 animate-fade-in">
       {/* Back button */}
       <div className="mb-6">
         <button
@@ -24,20 +73,26 @@ export function ProjectDetailView({ project, onBack }: ProjectDetailViewProps) {
       </div>
 
       {/* Hero Image directly matching Desktop - Project Page.png */}
-      <div className="w-full aspect-16/10 sm:aspect-16/9 overflow-hidden border border-black/10 bg-black/5">
+      <div className="w-full flex justify-center">
         <img
           src={project.heroImage}
           alt={project.title}
-          className="w-full h-full object-cover"
+          className="h-screen w-auto max-w-full border border-black/10 bg-black/5"
         />
       </div>
 
       {/* Meta Badge & Project Narrative Row */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 my-10 items-start">
         <div className="md:col-span-3">
-          <span className="inline-flex items-center gap-2 bg-black text-white text-[11px] font-black uppercase tracking-wider px-3 py-1">
-            AWFC ● Champions League
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 bg-black text-white text-[11px] font-black uppercase tracking-wider px-3 py-1">
+              {project.client || "[Untitled]"}
+            </span>
+            <span className="text-[11px] font-black uppercase">●</span>
+            <span className="text-[11px] font-black uppercase">
+              {project.title}
+            </span>
+          </div>
         </div>
 
         <div className="md:col-span-9">
@@ -47,59 +102,17 @@ export function ProjectDetailView({ project, onBack }: ProjectDetailViewProps) {
         </div>
       </div>
 
-      {/* 4 Detail Photos Grid directly matching Desktop - Project Page.png */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 my-8 items-start">
-        
-        {/* Left Image: Pile of Gold Bands on Fabric */}
-        <div className="md:col-span-4 aspect-square overflow-hidden border border-black/10 bg-black/5">
-          <img
-            src={project.detailImages[3] || project.coverImage}
-            alt="Gold championship bands on linen"
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Middle Stack: Presentation Box + Split Inscription Detail */}
-        <div className="md:col-span-4 space-y-6">
-          {/* Top: Leather Presentation Box held in hand */}
-          <div className="aspect-square overflow-hidden border border-black/10 bg-black/5">
-            <img
-              src={project.detailImages[0] || project.coverImage}
-              alt="Bespoke presentation box with foil lettering"
-              className="w-full h-full object-cover"
-            />
+      {/* Full gallery: masonry via CSS columns, natural aspect ratios preserved */}
+      <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 my-8">
+        {project.detailMedia.map((media, i) => (
+          <div
+            key={i}
+            className="break-inside-avoid mb-6 border border-black/10 bg-black/5"
+          >
+            <GalleryAsset media={media} alt={`${project.title} — ${i + 1}`} />
           </div>
-
-          {/* Bottom: Split side engraving view */}
-          <div className="grid grid-cols-2 gap-3 aspect-square">
-            <div className="overflow-hidden border border-black/10 bg-black/5">
-              <img
-                src={project.detailImages[1] || project.coverImage}
-                alt="Faceted star relief band"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="overflow-hidden border border-black/10 bg-black/5">
-              <img
-                src={project.detailImages[2] || project.coverImage}
-                alt="Interior hallmark detail"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Right Large Image: Scatter of Finished Rings */}
-        <div className="md:col-span-4 aspect-square md:aspect-auto md:h-full overflow-hidden border border-black/10 bg-black/5 flex items-center">
-          <img
-            src={project.detailImages[2] || project.coverImage}
-            alt="Trophy cluster of champion rings"
-            className="w-full h-full object-cover min-h-[360px]"
-          />
-        </div>
-
+        ))}
       </div>
-
     </div>
   );
 }

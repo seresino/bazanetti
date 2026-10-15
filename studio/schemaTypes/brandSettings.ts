@@ -46,6 +46,13 @@ export const brandSettingsType = defineType({
       ],
     }),
     defineField({
+      name: 'bioText',
+      title: 'Studio Bio (Info Page)',
+      type: 'text',
+      rows: 6,
+      description: 'The brand bio paragraph displayed on the Info page.',
+    }),
+    defineField({
       name: 'emailAddress',
       title: 'Studio Contact Email',
       type: 'string',

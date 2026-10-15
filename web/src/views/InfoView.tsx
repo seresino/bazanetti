@@ -1,93 +1,197 @@
-import React, { useState } from 'react';
-import { InterlockingRingsGraphic } from '../components/Icons';
-import { CheckCircle2 } from 'lucide-react';
+import React, { useLayoutEffect, useRef, useState } from "react";
+import { InterlockingRingsGraphic } from "../components/Icons";
+import { CheckCircle2 } from "lucide-react";
+import { useBrand } from "../context/BrandContext";
+
+export function InfoMasthead() {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useLayoutEffect(() => {
+    const heading = headingRef.current;
+    const container = heading?.parentElement;
+    if (!heading || !container) return;
+
+    // Scale font-size so the word's natural glyph run exactly fills the row
+    const fit = () => {
+      heading.style.fontSize = "100px";
+      heading.style.fontSize = `${(100 * container.clientWidth) / heading.offsetWidth}px`;
+    };
+
+    fit();
+    document.fonts?.ready.then(fit);
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, []);
+
+  return (
+    <div className="w-full select-none text-center">
+      <h1
+        ref={headingRef}
+        className="inline-block whitespace-nowrap font-black uppercase leading-none text-black"
+      >
+        BAZANETTI
+      </h1>
+    </div>
+  );
+}
 
 export function InfoView() {
+  const { brand } = useBrand();
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    metal: '18k Yellow Gold',
-    ringSize: '',
-    projectDescription: '',
+    fullName: "",
+    email: "",
+    metal: "",
+    ringSize: "",
+    projectDescription: "",
   });
 
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [status, setStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const formFields: {
+    id: string;
+    label: string;
+    key: keyof typeof formData;
+    required?: boolean;
+    multiline?: boolean;
+    type?: string;
+  }[] = [
+    {
+      id: "input-full-name",
+      label: "Full Name",
+      key: "fullName",
+      required: true,
+    },
+    { id: "input-email", label: "Email", key: "email", type: "email" },
+    { id: "input-metal", label: "Metal", key: "metal" },
+    { id: "input-ring-size", label: "Ring Size", key: "ringSize" },
+    {
+      id: "input-project-description",
+      label: "Project Description",
+      key: "projectDescription",
+      required: true,
+      multiline: true,
+    },
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName.trim() || !formData.projectDescription.trim()) return;
-    setIsSubmitted(true);
+    if (!formData.fullName.trim() || !formData.projectDescription.trim())
+      return;
+    setStatus("submitting");
+    try {
+      const res = await fetch(import.meta.env.VITE_FORM_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) throw new Error(`Form submit failed: ${res.status}`);
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-16 animate-fade-in">
-      
-      {/* Massive Graphic BAZANETTI Heading directly matching Desktop - Info.png */}
-      <div className="text-center select-none pt-4">
-        <h1 className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter text-black uppercase leading-none">
-          BAZANETTI
-        </h1>
-      </div>
+    <div className="w-full px-4 sm:px-6 py-6 space-y-16 animate-fade-in">
+      {/* Brand Bio & EST.2021 Statement: 2-row, 3-column grid matching Desktop - Info.png */}
+      <div className="grid sm:grid-cols-[1fr_2fr_1fr] items-center gap-y-20 py-8">
+        {/* Row 1, Col 1: intentionally empty */}
+        <div className="hidden sm:block" />
 
-      {/* Brand Bio Statement & Ring Emblem Row */}
-      <div className="relative max-w-2xl mx-auto text-center space-y-6">
-        <p className="text-xs md:text-sm font-bold leading-relaxed text-black/90">
-          Founded in London, Bazanetti operates at the intersection of raw geological alchemy and architectural brutalism. Each object and jewel is realised by hand using lost-wax centrifugal casting, unrefined gemstones, and recycled precious bullion to produce singular heirlooms that refuse generic luxury conventions.
-        </p>
-
-        {/* Interlocking Rings Graphic floating on top right */}
-        <div className="hidden sm:block absolute -right-24 -top-6">
-          <InterlockingRingsGraphic className="w-28 h-20 text-black hover:scale-105 transition-transform" />
-        </div>
-      </div>
-
-      {/* Massive EST.2021 Statement directly matching Desktop - Info.png */}
-      <div className="relative py-8 border-y border-dashed border-black/30 flex items-center justify-between">
-        <div className="hidden sm:block text-left">
-          <p className="text-[10px] font-black tracking-[0.3em] uppercase text-black">
-            JEWELLERY<br />&amp;<br />OBJECTS
+        {/* Row 1, Col 2: brand bio */}
+        <div className="text-center">
+          <p className="text-xs md:text-sm font-haas font-bold leading-relaxed text-black/90 whitespace-pre-line">
+            {brand.bioText ||
+              "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat."}
           </p>
         </div>
 
-        <div className="mx-auto text-center">
-          <h2 className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight text-black select-none">
+        {/* Row 1, Col 3: interlocking rings */}
+        <div className="hidden sm:flex items-end justify-center">
+          {brand.icons.rings ? (
+            <img
+              src={brand.icons.rings}
+              alt="Interlocking Rings"
+              className="w-28 h-20 object-contain hover:scale-105 transition-transform"
+            />
+          ) : (
+            <InterlockingRingsGraphic className="w-28 h-20 text-black hover:scale-105 transition-transform" />
+          )}
+        </div>
+
+        {/* Row 2, Col 1: jewellery & objects */}
+        <div className="hidden sm:block text-center">
+          <p className="text-[10px] font-haas font-normal uppercase text-black">
+            JEWELLERY
+            <br />
+            &amp;
+            <br />
+            OBJECTS
+          </p>
+        </div>
+
+        {/* Row 2, Col 2: EST.2021 */}
+        <div className="text-center">
+          <h2 className="text-7xl sm:text-[10vw] md:text-[11vw] leading-none font-black tracking-tight text-black select-none">
             EST.2021
           </h2>
         </div>
 
-        <div className="hidden sm:block text-right">
-          <p className="text-[10px] font-black tracking-[0.3em] uppercase text-black">
-            REALISED<br />IN<br />LONDON
+        {/* Row 2, Col 3: realised in london */}
+        <div className="hidden sm:block text-center">
+          <p className="text-[10px] font-haas font-normal uppercase text-black">
+            REALISED
+            <br />
+            IN
+            <br />
+            LONDON
           </p>
         </div>
       </div>
 
+      {/* Full-viewport-width dotted divider: absolutely positioned against the
+          relative flex row in App, so it stretches past the side tickers */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 border-t border-dashed border-black"
+      />
+
       {/* ORDER FORM Section directly matching Desktop - Info.png */}
-      <section id="bespoke-order-form" className="max-w-xl mx-auto pt-6 space-y-8">
-        <div className="text-center space-y-2">
-          <h3 className="text-3xl md:text-4xl font-black text-black tracking-wider uppercase">
+      <section
+        id="bespoke-order-form"
+        className="max-w-xl mx-auto pt-10 space-y-10"
+      >
+        <div className="text-center space-y-4">
+          <h3 className="text-4xl md:text-5xl font-black text-black tracking-wider uppercase">
             ORDER FORM
           </h3>
         </div>
 
-        {isSubmitted ? (
+        {status === "success" ? (
           <div className="border border-black bg-black/2 p-8 text-center space-y-4 animate-fade-in">
             <CheckCircle2 className="w-10 h-10 text-black mx-auto" />
             <h4 className="text-xl font-black uppercase text-black">
               Inquiry Received
             </h4>
             <p className="text-xs text-black/85 leading-relaxed">
-              Thank you, <strong className="text-black">{formData.fullName}</strong>. Your commission brief has been recorded. Our London atelier will review your requirements and get back to you within 48 hours.
+              Thank you,{" "}
+              <strong className="text-black">{formData.fullName}</strong>. Your
+              order form has been submitted.
             </p>
             <button
               onClick={() => {
-                setIsSubmitted(false);
+                setStatus("idle");
                 setFormData({
-                  fullName: '',
-                  email: '',
-                  metal: '18k Yellow Gold',
-                  ringSize: '',
-                  projectDescription: '',
+                  fullName: "",
+                  email: "",
+                  metal: "",
+                  ringSize: "",
+                  projectDescription: "",
                 });
               }}
               className="mt-4 inline-block text-xs font-black uppercase tracking-widest underline cursor-pointer"
@@ -96,119 +200,66 @@ export function InfoView() {
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-8">
-            
-            {/* Field: Full Name */}
-            <div className="space-y-2">
-              <label 
-                htmlFor="input-full-name"
-                className="block text-center text-xs md:text-sm font-bold uppercase tracking-wider text-black"
-              >
-                Full Name
-              </label>
-              <input
-                id="input-full-name"
-                type="text"
-                required
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                className="w-full text-center py-2 border-b border-black text-sm md:text-base font-medium focus:outline-hidden focus:border-b-2 bg-transparent transition-all"
-              />
-            </div>
-
-            {/* Field: Email Contact */}
-            <div className="space-y-2">
-              <label 
-                htmlFor="input-email"
-                className="block text-center text-xs md:text-sm font-bold uppercase tracking-wider text-black"
-              >
-                Email Contact
-              </label>
-              <input
-                id="input-email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full text-center py-2 border-b border-black text-sm md:text-base font-medium focus:outline-hidden focus:border-b-2 bg-transparent transition-all"
-              />
-            </div>
-
-            {/* Field: Metal */}
-            <div className="space-y-2">
-              <label 
-                htmlFor="select-metal"
-                className="block text-center text-xs md:text-sm font-bold uppercase tracking-wider text-black"
-              >
-                Metal
-              </label>
-              <div className="relative">
-                <select
-                  id="select-metal"
-                  value={formData.metal}
-                  onChange={(e) => setFormData({ ...formData, metal: e.target.value })}
-                  className="w-full text-center py-2 border-b border-black text-sm md:text-base font-medium focus:outline-hidden focus:border-b-2 bg-transparent appearance-none cursor-pointer"
+          <form onSubmit={handleSubmit} className="space-y-10">
+            {formFields.map((field) => (
+              <div key={field.id} className="space-y-2 text-center">
+                <label
+                  htmlFor={field.id}
+                  className="inline-block bg-black text-white font-haas text-sm md:text-sm uppercase px-1"
                 >
-                  <option value="18k Yellow Gold">18k Yellow Gold</option>
-                  <option value="14k Yellow Gold">14k Yellow Gold</option>
-                  <option value="925 Sterling Silver">925 Sterling Silver</option>
-                  <option value="Oxidised Black Silver">Oxidised Black Silver</option>
-                  <option value="Platinum (PT950)">Platinum (PT950)</option>
-                  <option value="Bespoke Raw Alloy">Bespoke Raw Alloy</option>
-                </select>
+                  {field.label}
+                </label>
+                {field.multiline ? (
+                  <textarea
+                    id={field.id}
+                    rows={1}
+                    required={field.required}
+                    value={formData[field.key]}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [field.key]: e.target.value })
+                    }
+                    className="block w-4/5 mx-auto text-center py-2 border-b border-dashed border-black text-sm md:text-base font-haas font-normal focus:outline-hidden"
+                  />
+                ) : (
+                  <input
+                    id={field.id}
+                    type={field.type ?? "text"}
+                    required={field.required}
+                    value={formData[field.key]}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [field.key]: e.target.value })
+                    }
+                    className="block w-4/5 mx-auto text-center py-2 border-b border-dashed border-black text-sm md:text-base font-haas font-normal focus:outline-hidden"
+                  />
+                )}
               </div>
-            </div>
+            ))}
 
-            {/* Field: Ring Size */}
-            <div className="space-y-2">
-              <label 
-                htmlFor="input-ring-size"
-                className="block text-center text-xs md:text-sm font-bold uppercase tracking-wider text-black"
-              >
-                Ring Size
-              </label>
-              <input
-                id="input-ring-size"
-                type="text"
-                value={formData.ringSize}
-                onChange={(e) => setFormData({ ...formData, ringSize: e.target.value })}
-                className="w-full text-center py-2 border-b border-black text-sm md:text-base font-medium focus:outline-hidden focus:border-b-2 bg-transparent transition-all"
-              />
-            </div>
-
-            {/* Field: Project Description */}
-            <div className="space-y-2">
-              <label 
-                htmlFor="input-project-description"
-                className="block text-center text-xs md:text-sm font-bold uppercase tracking-wider text-black"
-              >
-                Project Description
-              </label>
-              <textarea
-                id="input-project-description"
-                rows={4}
-                required
-                value={formData.projectDescription}
-                onChange={(e) => setFormData({ ...formData, projectDescription: e.target.value })}
-                className="w-full text-center py-2 border-b border-black text-sm font-medium focus:outline-hidden focus:border-b-2 bg-transparent transition-all resize-none"
-              />
-            </div>
+            {status === "error" && (
+              <p className="text-center text-xs font-haas uppercase tracking-widest text-red-700">
+                Submission failed — please try again
+              </p>
+            )}
 
             {/* Submit Button matching Desktop - Info.png */}
             <div className="pt-6 flex justify-center">
               <button
                 id="submit-order-form-button"
                 type="submit"
-                className="bg-black text-white px-12 py-3.5 text-xs font-black uppercase tracking-[0.3em] hover:bg-black/90 active:scale-95 transition-all cursor-pointer shadow-md"
+                disabled={status === "submitting"}
+                className="cursor-pointer hover:opacity-80 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-wait"
+                aria-label="Submit order inquiry"
               >
-                SUBMIT
+                <img
+                  src="/emblems/submit.svg"
+                  alt={status === "submitting" ? "Submitting…" : "Submit"}
+                  className="h-12 w-auto"
+                />
               </button>
             </div>
-
           </form>
         )}
       </section>
-
     </div>
   );
 }

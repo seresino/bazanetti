@@ -1,6 +1,6 @@
-import React from 'react';
-import { ActiveTab } from '../types';
-import { useBrand } from '../context/BrandContext';
+import React from "react";
+import { ActiveTab } from "../types";
+import { useBrand } from "../context/BrandContext";
 
 interface NavigationProps {
   activeTab: ActiveTab;
@@ -9,119 +9,102 @@ interface NavigationProps {
   onOpenCart?: () => void;
 }
 
-export function Navigation({
-  activeTab,
-  onSelectTab,
-}: NavigationProps) {
+const MISSING_ICON_CLASS =
+  "font-mono text-[9px] font-bold text-white tracking-wider";
+
+export function Navigation({ activeTab, onSelectTab }: NavigationProps) {
   const { brand } = useBrand();
 
-  const navItems: { tab: ActiveTab; label: string; icon: React.ReactNode }[] = [
+  const navItems: {
+    tab: ActiveTab;
+    label: string;
+    src: string | null;
+    iconClass: string;
+    fallbackClass: string;
+    fallbackText: string;
+  }[] = [
     {
-      tab: 'home',
-      label: 'Home',
-      icon: brand.monogramEmblem ? (
-        <img
-          src={brand.monogramEmblem}
-          alt="Home"
-          className="w-6 h-6 md:w-7 md:h-7 object-contain transition-transform group-hover:scale-110"
-        />
-      ) : (
-        <span className="text-xs font-black tracking-widest text-black">
-          [HOME]
-        </span>
-      ),
+      tab: "home",
+      label: "Home",
+      src: brand.monogramEmblem,
+      iconClass: "w-6 h-6 md:w-7 md:h-7",
+      fallbackClass: "text-xs font-black tracking-widest text-white",
+      fallbackText: "[HOME]",
     },
     {
-      tab: 'shop',
-      label: 'Shop',
-      icon: brand.icons.shop ? (
-        <img
-          src={brand.icons.shop}
-          alt="Shop"
-          className="w-8 h-8 md:w-9 md:h-9 object-contain transition-transform group-hover:scale-110"
-        />
-      ) : (
-        <span className="font-mono text-[9px] font-bold text-red-600 tracking-wider">
-          [NO SHOP ICON]
-        </span>
-      ),
+      tab: "shop",
+      label: "Shop",
+      src: brand.icons.shop,
+      iconClass: "w-8 h-8 md:w-9 md:h-9",
+      fallbackClass: MISSING_ICON_CLASS,
+      fallbackText: "[NO SHOP ICON]",
     },
     {
-      tab: 'info',
-      label: 'Info',
-      icon: brand.icons.info ? (
-        <img
-          src={brand.icons.info}
-          alt="Info"
-          className="w-7 h-7 md:w-8 md:h-8 object-contain transition-transform group-hover:scale-110"
-        />
-      ) : (
-        <span className="font-mono text-[9px] font-bold text-red-600 tracking-wider">
-          [NO INFO ICON]
-        </span>
-      ),
+      tab: "info",
+      label: "Info",
+      src: brand.icons.info,
+      iconClass: "w-7 h-7 md:w-8 md:h-8",
+      fallbackClass: MISSING_ICON_CLASS,
+      fallbackText: "[NO INFO ICON]",
     },
     {
-      tab: 'works',
-      label: 'Works',
-      icon: brand.icons.works ? (
-        <img
-          src={brand.icons.works}
-          alt="Works"
-          className="w-8 h-8 md:w-9 md:h-9 object-contain transition-transform group-hover:scale-110"
-        />
-      ) : (
-        <span className="font-mono text-[9px] font-bold text-red-600 tracking-wider">
-          [NO WORKS ICON]
-        </span>
-      ),
+      tab: "works",
+      label: "Works",
+      src: brand.icons.works,
+      iconClass: "w-8 h-8 md:w-9 md:h-9",
+      fallbackClass: MISSING_ICON_CLASS,
+      fallbackText: "[NO WORKS ICON]",
     },
     {
-      tab: 'vault',
-      label: 'Vault',
-      icon: brand.icons.vault ? (
-        <img
-          src={brand.icons.vault}
-          alt="Vault"
-          className="w-8 h-8 md:w-9 md:h-9 object-contain transition-transform group-hover:scale-110"
-        />
-      ) : (
-        <span className="font-mono text-[9px] font-bold text-red-600 tracking-wider">
-          [NO VAULT ICON]
-        </span>
-      ),
+      tab: "vault",
+      label: "Vault",
+      src: brand.icons.vault,
+      iconClass: "w-8 h-8 md:w-9 md:h-9",
+      fallbackClass: MISSING_ICON_CLASS,
+      fallbackText: "[NO VAULT ICON]",
     },
   ];
 
-
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-xs">
+    <header className="sticky top-0 z-40 w-full mix-blend-difference">
       <div className="w-full px-2 sm:px-3 md:px-3.5 py-4 md:py-6">
-        
         {/* Navigation Glyphs: Evenly spaced stretching full width of the viewport */}
-        <nav 
+        <nav
           id="main-navigation"
           aria-label="Primary Navigation"
           className="w-full flex items-center justify-between"
         >
           {navItems.map((item) => {
-            const isActive = activeTab === item.tab || (activeTab === 'project' && item.tab === 'works');
+            const isActive =
+              activeTab === item.tab ||
+              (activeTab === "project" && item.tab === "works");
             return (
               <button
                 key={item.tab}
                 id={`nav-tab-${item.tab}`}
                 onClick={() => onSelectTab(item.tab)}
                 className={`group relative w-11 flex flex-col items-center justify-center py-2 transition-all cursor-pointer ${
-                  isActive ? 'text-black scale-110' : 'text-black/80 hover:text-black hover:scale-105'
+                  isActive
+                    ? "text-white scale-110"
+                    : "text-white/80 hover:text-white hover:scale-105"
                 }`}
                 title={item.label}
               >
-                {item.icon}
+                {item.src ? (
+                  <img
+                    src={item.src}
+                    alt={item.label}
+                    className={`${item.iconClass} object-contain brightness-0 invert transition-transform group-hover:scale-110`}
+                  />
+                ) : (
+                  <span className={item.fallbackClass}>
+                    {item.fallbackText}
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
-
       </div>
     </header>
   );

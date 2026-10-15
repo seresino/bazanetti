@@ -12,8 +12,14 @@ export interface Product {
   inStock: boolean;
 }
 
+export interface GalleryMedia {
+  type: "image" | "video";
+  url: string;
+}
+
 export interface Project {
   id: string;
+  slug: string;
   title: string;
   category: string;
   client: string;
@@ -21,9 +27,9 @@ export interface Project {
   coverImage: string;
   heroImage: string;
   description: string;
-  detailImages: string[];
+  detailMedia: GalleryMedia[];
   tags: string[];
-  aspectRatio?: 'tall' | 'square' | 'wide' | 'portrait';
+  aspectRatio?: "tall" | "square" | "wide" | "portrait";
 }
 
 export interface VaultItem {
@@ -34,6 +40,7 @@ export interface VaultItem {
   material: string;
   image: string;
   edition: string;
+  model3dUrl?: string;
 }
 
 export interface CartItem {
@@ -50,4 +57,11 @@ export interface OrderFormData {
   projectDescription: string;
 }
 
-export type ActiveTab = 'landing' | 'home' | 'shop' | 'works' | 'vault' | 'info' | 'project';
+export type ActiveTab =
+  | "landing"
+  | "home"
+  | "shop"
+  | "works"
+  | "vault"
+  | "info"
+  | "project";
