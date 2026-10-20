@@ -28,6 +28,13 @@ const defaultBrand: BrandSettings = {
     vault: null,
     rings: null,
   },
+  wordIcons: {
+    shop: null,
+    info: null,
+    works: null,
+    vault: null,
+    rings: null,
+  },
 };
 
 const BrandContext = createContext<BrandContextType>({

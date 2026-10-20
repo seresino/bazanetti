@@ -76,6 +76,20 @@ html,
 body,
 #root {
   font-family: "Neue Brücke", "Neue Brucke", sans-serif !important;
+  background-color: #ffffff;
+}
+
+@keyframes page-swipe-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-page-swipe-up {
+  animation: page-swipe-up 0.65s cubic-bezier(0.83, 0, 0.17, 1) forwards;
 }
 
 /* Universal typography enforcement — in @layer base so utilities can override it */

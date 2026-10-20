@@ -113,8 +113,10 @@ export async function fetchShopifyProducts(): Promise<{
           ? undefined
           : node.options?.[0]?.name || undefined;
 
-        const image =
-          node.featuredImage?.url || node.images?.edges?.[0]?.node?.url || "";
+        const images: string[] = (node.images?.edges ?? [])
+          .map((e: any) => e.node?.url)
+          .filter(Boolean);
+        const image = node.featuredImage?.url || images[0] || "";
         const tags: string[] = node.tags ?? [];
 
         return {
@@ -125,7 +127,8 @@ export async function fetchShopifyProducts(): Promise<{
             node.priceRange?.minVariantPrice?.currencyCode || "GBP",
           ),
           image,
-          altImage: node.images?.edges?.[1]?.node?.url || undefined,
+          altImage: images[1] || undefined,
+          images,
           material:
             node.materialMetafield?.value ||
             tagValue(tags, ["material", "materials"]) ||

@@ -12,6 +12,12 @@ export const workType = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({name: 'slug', title: 'Slug', type: 'slug', options: {source: 'title'}}),
+    defineField({
+      name: 'order',
+      title: 'Order',
+      type: 'number',
+      description: 'Lower numbers appear first on the Works page. Leave blank to sort by year.',
+    }),
     defineField({name: 'year', title: 'Year', type: 'string'}),
     defineField({name: 'client', title: 'Client / Commissioner', type: 'string'}),
     defineField({

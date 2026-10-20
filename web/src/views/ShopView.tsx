@@ -2,17 +2,20 @@ import React, { useEffect, useState } from "react";
 import { Product } from "../types";
 import { FullScreenEmblemHero } from "../components/FullScreenEmblemHero";
 import { fetchShopifyProducts } from "../lib/shopify";
+import { X } from "lucide-react";
 
 interface ShopViewProps {
   onAddToCart: (product: Product, size: string) => void;
+  onOpenCart?: () => void;
 }
 
-export function ShopView({ onAddToCart }: ShopViewProps) {
+export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("M");
+  const [imageIndex, setImageIndex] = useState(0);
 
   useEffect(() => {
     fetchShopifyProducts().then((res) => {
@@ -26,6 +29,7 @@ export function ShopView({ onAddToCart }: ShopViewProps) {
     if (!selectedProduct) return;
     onAddToCart(selectedProduct, selectedSize);
     setSelectedProduct(null);
+    onOpenCart?.();
   };
 
   const selectedVariant = selectedProduct?.variants?.find(
@@ -35,6 +39,29 @@ export function ShopView({ onAddToCart }: ShopViewProps) {
   const canBuy = selectedVariant
     ? selectedVariant.availableForSale
     : (selectedProduct?.inStock ?? false);
+
+  const productImages = selectedProduct
+    ? selectedProduct.images?.length
+      ? selectedProduct.images
+      : ([selectedProduct.image, selectedProduct.altImage].filter(
+          Boolean,
+        ) as string[])
+    : [];
+
+  const detailLines = selectedProduct
+    ? ([
+        selectedProduct.material && selectedProduct.material !== "—"
+          ? `Material — ${selectedProduct.material}`
+          : null,
+        selectedProduct.gemstones && selectedProduct.gemstones !== "—"
+          ? `Stones — ${selectedProduct.gemstones}`
+          : null,
+        ...(selectedProduct.description || "")
+          .split(/\n+/)
+          .map((s) => s.trim())
+          .filter(Boolean),
+      ].filter(Boolean) as string[])
+    : [];
 
   return (
     <div className="w-full">
@@ -73,8 +100,9 @@ export function ShopView({ onAddToCart }: ShopViewProps) {
               onClick={() => {
                 setSelectedProduct(product);
                 setSelectedSize(product.sizes[1] || product.sizes[0] || "M");
+                setImageIndex(0);
               }}
-              className="group relative border-b border-r border-dashed border-black/40 max-sm:border-r-0 sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(4n)]:border-r-0 bg-white flex flex-col justify-between cursor-pointer transition-colors hover:bg-black/[0.015]"
+              className="group relative border-b border-r border-dashed border-black/40 max-sm:border-r-0 sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(4n)]:border-r-0 bg-white flex flex-col justify-between cursor-pointer transition-colors"
             >
               {/* Product Image Stage */}
               <div className="relative w-full aspect-square p-6 md:p-8 flex items-center justify-center overflow-hidden">
@@ -100,96 +128,122 @@ export function ShopView({ onAddToCart }: ShopViewProps) {
         </div>
       </div>
 
-      {/* Product Detail Modal */}
+      {/* Product Detail Modal — split pane, dashed vertical divider */}
       {selectedProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-white/95 backdrop-blur-xs">
           <div
-            className="bg-white max-w-2xl w-full border border-black shadow-2xl p-6 md:p-8 relative"
+            className="relative bg-white w-full max-w-6xl border border-black"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 text-xs font-black uppercase tracking-widest p-2 hover:bg-black/5 cursor-pointer"
+              className="absolute top-3 right-3 z-10 p-2 text-black hover:opacity-60 transition-opacity cursor-pointer"
+              aria-label="Close"
             >
-              [CLOSE ✕]
+              <X className="w-5 h-5" />
             </button>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-              {/* Product Image */}
-              <div className="aspect-square bg-black/2 border border-dashed border-black/30 p-6 flex items-center justify-center">
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              {/* Left: image carousel */}
+              <div className="relative flex items-center justify-center p-10 md:p-16 min-h-[40vh] md:min-h-[70vh]">
+                {productImages.length > 1 && (
+                  <button
+                    onClick={() =>
+                      setImageIndex(
+                        (imageIndex - 1 + productImages.length) %
+                          productImages.length,
+                      )
+                    }
+                    className="absolute left-2 top-1/2 -translate-y-1/2 p-3 hover:opacity-50 cursor-pointer"
+                    aria-label="Previous image"
+                  >
+                    <img
+                      src="/images/ui/arrow.png"
+                      alt=""
+                      className="h-6 w-auto"
+                    />
+                  </button>
+                )}
                 <img
-                  src={selectedProduct.image}
+                  src={productImages[imageIndex] || selectedProduct.image}
                   alt={selectedProduct.name}
-                  className="w-full h-full object-contain"
+                  className="max-h-[60vh] w-auto max-w-full object-contain"
                 />
+                {productImages.length > 1 && (
+                  <button
+                    onClick={() =>
+                      setImageIndex((imageIndex + 1) % productImages.length)
+                    }
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-3 hover:opacity-50 cursor-pointer"
+                    aria-label="Next image"
+                  >
+                    <img
+                      src="/images/ui/arrow.png"
+                      alt=""
+                      className="h-6 w-auto rotate-180"
+                    />
+                  </button>
+                )}
               </div>
 
-              {/* Details & Customisation */}
-              <div className="flex flex-col justify-between space-y-4">
-                <div>
-                  <h3 className="text-2xl font-black text-black">
-                    {selectedProduct.name}
-                  </h3>
-                  <p className="font-mono text-xl font-bold text-black mt-2">
-                    {selectedProduct.currency}
-                    {displayPrice.toFixed(2)}
-                  </p>
+              {/* Right: details, dashed vertical divider */}
+              <div className="border-t md:border-t-0 md:border-l border-dashed border-black/40 p-8 md:p-12 flex flex-col justify-center space-y-6">
+                <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-black">
+                  {selectedProduct.name}
+                </h3>
 
-                  <p className="text-xs text-black/85 leading-relaxed mt-4">
-                    {selectedProduct.description}
-                  </p>
+                {detailLines.length > 0 && (
+                  <ul className="list-disc pl-5 space-y-1 text-xs md:text-sm font-haas text-black/90">
+                    {detailLines.map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
+                )}
 
-                  <div className="mt-4 pt-4 border-t border-dashed border-black/20 space-y-2">
-                    <p className="text-[11px] font-bold text-black">
-                      <span className="text-black/85 font-medium">
-                        Material:{" "}
-                      </span>
-                      {selectedProduct.material}
-                    </p>
-                    <p className="text-[11px] font-bold text-black">
-                      <span className="text-black/85 font-medium">
-                        Stones:{" "}
-                      </span>
-                      {selectedProduct.gemstones}
-                    </p>
-                  </div>
-
-                  {/* Variant Selector (hidden for single-variant products) */}
-                  {selectedProduct.sizes.length > 1 && (
-                    <div className="mt-5">
-                      <label className="block text-[11px] font-black uppercase tracking-wider text-black mb-2">
-                        Select {selectedProduct.variantLabel || "Option"}:
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedProduct.sizes.map((sz) => (
-                          <button
-                            key={sz}
-                            onClick={() => setSelectedSize(sz)}
-                            className={`px-3 py-1 text-xs font-bold border transition-all cursor-pointer ${
-                              selectedSize === sz
-                                ? "bg-black text-white border-black"
-                                : "border-black/30 text-black hover:border-black"
-                            }`}
-                          >
-                            {sz}
-                          </button>
-                        ))}
-                      </div>
+                {selectedProduct.sizes.length > 1 && (
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-wider text-black mb-2">
+                      Select {selectedProduct.variantLabel || "Option"}:
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProduct.sizes.map((sz) => (
+                        <button
+                          key={sz}
+                          onClick={() => setSelectedSize(sz)}
+                          className={`px-3 py-1 text-xs font-bold border transition-all cursor-pointer ${
+                            selectedSize === sz
+                              ? "bg-black text-white border-black"
+                              : "border-black/30 text-black hover:border-black"
+                          }`}
+                        >
+                          {sz}
+                        </button>
+                      ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
+                <p className="font-mono text-base text-black">
+                  {selectedProduct.currency}
+                  {displayPrice.toFixed(2)}
+                </p>
+
+                {/* Angled tag outline button */}
                 <button
                   id="modal-add-to-cart"
                   onClick={handleModalAdd}
                   disabled={!canBuy}
-                  className="w-full bg-black text-white py-3.5 text-xs font-black uppercase tracking-[0.25em] hover:bg-black/90 active:scale-[0.99] transition-all cursor-pointer mt-6 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed cursor-pointer self-start"
                 >
-                  <span>
-                    {canBuy
-                      ? `Add to Bag — ${selectedProduct.currency}${displayPrice.toFixed(2)}`
-                      : "Sold Out"}
-                  </span>
+                  {canBuy ? (
+                    <img
+                      src="/images/ui/tag-checkout.png"
+                      alt="Checkout"
+                      className="h-12 md:h-14 w-auto hover:opacity-70 transition-opacity"
+                    />
+                  ) : (
+                    <span className="text-black/40">Sold Out</span>
+                  )}
                 </button>
               </div>
             </div>

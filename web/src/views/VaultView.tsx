@@ -8,10 +8,7 @@ import React, {
 import { VaultItem } from "../types";
 import { fetchSanityVault, projectId, dataset } from "../lib/sanity";
 import { ModelViewer3D } from "../components/ModelViewer3D";
-
-// Fallback high-quality jewelry sample model for demonstration
-const SAMPLE_DEMO_GLB =
-  "https://modelviewer.dev/shared-assets/models/glTF-Sample-Assets/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb";
+import { X } from "lucide-react";
 
 const TILE_SPIN_RAD_PER_SEC = (30 * Math.PI) / 180;
 
@@ -66,6 +63,7 @@ function VaultTile({
           src={glbUrl}
           alt={`3D model of ${item.title}`}
           loading="lazy"
+          camera-orbit="180deg 75deg 105%"
           environment-image="neutral"
           exposure="1.05"
           shadow-intensity="1"
@@ -87,7 +85,7 @@ function VaultTile({
           draggable={false}
         />
       ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-100 p-2 text-center font-mono text-[9px]">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-white p-2 text-center font-mono text-[9px]">
           <span className="font-bold">{item.code}</span>
           <span className="text-neutral-500">{item.title}</span>
         </div>
@@ -102,8 +100,6 @@ export function VaultView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEmpty, setIsEmpty] = useState(false);
-  const [modalMode, setModalMode] = useState<"3d" | "photo">("3d");
-  const [localGlbUrls, setLocalGlbUrls] = useState<Record<string, string>>({});
   const heroRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -124,22 +120,7 @@ export function VaultView() {
     loadData();
   }, [loadData]);
 
-  // When opening an item, default to 3D if a 3D model exists or if local test file exists
-  const handleOpenItem = (item: VaultItem) => {
-    setActiveItem(item);
-    const has3D = Boolean(item.model3dUrl || localGlbUrls[item.id]);
-    setModalMode(has3D ? "3d" : "photo");
-  };
-
-  const handleTestUpload = (item: VaultItem, file: File) => {
-    const objectUrl = URL.createObjectURL(file);
-    setLocalGlbUrls((prev) => ({ ...prev, [item.id]: objectUrl }));
-    setModalMode("3d");
-  };
-
-  const activeGlbUrl = activeItem
-    ? localGlbUrls[activeItem.id] || activeItem.model3dUrl || null
-    : null;
+  const activeGlbUrl = activeItem ? activeItem.model3dUrl || null : null;
 
   // Repeat the vault items so the strip always overflows the viewport —
   // the archive reads as wallpaper behind the emblem (as in the design).
@@ -231,8 +212,8 @@ export function VaultView() {
                 <VaultTile
                   key={key}
                   item={item}
-                  glbUrl={item.model3dUrl || localGlbUrls[item.id] || null}
-                  onOpen={() => handleOpenItem(item)}
+                  glbUrl={item.model3dUrl || null}
+                  onOpen={() => setActiveItem(item)}
                 />
               ))}
             </div>
@@ -256,161 +237,42 @@ export function VaultView() {
         </div>
       </section>
 
-      {/* Modal for Archival Item with Interactive 3D Rotation */}
+      {/* Archival item modal — 3D model + name only, matching shop modal chrome */}
       {activeItem && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xs animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-white/95 backdrop-blur-xs"
           onClick={() => setActiveItem(null)}
         >
           <div
-            className="bg-white max-w-xl w-full border border-black shadow-2xl p-5 sm:p-7 relative max-h-[92vh] flex flex-col overflow-y-auto"
+            className="relative bg-white w-full max-w-3xl border border-black"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header Close & Tabs */}
-            <div className="flex items-center justify-between border-b border-black pb-3 mb-4">
-              {/* Mode Switcher: 3D vs Photo */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setModalMode("3d")}
-                  className={`px-3 py-1 text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer border ${
-                    modalMode === "3d"
-                      ? "bg-black text-white border-black"
-                      : "bg-transparent text-neutral-600 border-neutral-300 hover:border-black"
-                  }`}
-                >
-                  360° 3D Model
-                </button>
-                <button
-                  onClick={() => setModalMode("photo")}
-                  className={`px-3 py-1 text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer border ${
-                    modalMode === "photo"
-                      ? "bg-black text-white border-black"
-                      : "bg-transparent text-neutral-600 border-neutral-300 hover:border-black"
-                  }`}
-                >
-                  Still Photo
-                </button>
-              </div>
+            <button
+              onClick={() => setActiveItem(null)}
+              className="absolute top-3 right-3 z-10 p-2 text-black hover:opacity-60 transition-opacity cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-              <button
-                onClick={() => setActiveItem(null)}
-                className="text-xs font-mono font-bold uppercase tracking-widest px-2 py-1 hover:bg-black/5 cursor-pointer text-black"
-              >
-                [CLOSE ✕]
-              </button>
-            </div>
-
-            {/* Main Interactive Stage */}
-            <div className="relative aspect-square w-full bg-neutral-100 border border-black/15 overflow-hidden">
-              {modalMode === "3d" ? (
-                activeGlbUrl ? (
-                  <ModelViewer3D
-                    src={activeGlbUrl}
-                    poster={activeItem.image}
-                    title={activeItem.title}
-                    onUploadCustomGlb={(file) =>
-                      handleTestUpload(activeItem, file)
-                    }
-                  />
-                ) : (
-                  /* If no 3D model uploaded yet for this item, offer immediate test upload or sample demo */
-                  <div className="w-full h-full p-6 flex flex-col items-center justify-center text-center bg-neutral-50 relative">
-                    <div className="w-12 h-12 mb-3 rounded-full border border-black/20 flex items-center justify-center">
-                      <svg
-                        className="w-6 h-6 text-black"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      >
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                        <line x1="12" y1="22.08" x2="12" y2="12" />
-                      </svg>
-                    </div>
-
-                    <h4 className="text-sm font-bold uppercase tracking-wider text-black mb-1">
-                      No 3D File Linked in Sanity Yet
-                    </h4>
-                    <p className="text-[11px] text-neutral-500 max-w-xs mb-4">
-                      Upload your exported{" "}
-                      <code className="bg-neutral-200 px-1 py-0.5 rounded text-black font-mono">
-                        .glb
-                      </code>{" "}
-                      file in Sanity Studio to enable 360° click-and-drag
-                      rotation for this piece.
-                    </p>
-
-                    <div className="flex flex-wrap items-center justify-center gap-2">
-                      <label className="px-3 py-1.5 bg-black text-white text-[11px] font-mono uppercase font-bold tracking-wider hover:bg-neutral-800 transition-colors cursor-pointer">
-                        <span>Test Local .GLB File</span>
-                        <input
-                          type="file"
-                          accept=".glb,.gltf"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleTestUpload(activeItem, file);
-                          }}
-                          className="hidden"
-                        />
-                      </label>
-
-                      <button
-                        onClick={() => {
-                          setLocalGlbUrls((prev) => ({
-                            ...prev,
-                            [activeItem.id]: SAMPLE_DEMO_GLB,
-                          }));
-                        }}
-                        className="px-3 py-1.5 border border-black/30 hover:border-black text-black text-[11px] font-mono uppercase font-bold tracking-wider transition-colors cursor-pointer"
-                      >
-                        Try Sample 3D Model
-                      </button>
-                    </div>
-                  </div>
-                )
-              ) : /* Still Photo View */
-              activeItem.image ? (
-                <img
-                  src={activeItem.image}
-                  alt={activeItem.title}
-                  className="w-full h-full object-cover"
+            <div className="aspect-square w-full">
+              {activeGlbUrl ? (
+                <ModelViewer3D
+                  src={activeGlbUrl}
+                  poster={activeItem.image}
+                  title={activeItem.title}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center font-mono text-xs text-neutral-500">
-                  [No image uploaded]
+                <div className="w-full h-full flex items-center justify-center font-haas text-black/40">
+                  No 3D file
                 </div>
               )}
             </div>
 
-            {/* Details Section */}
-            <div className="border-t border-dashed border-black/20 pt-4 mt-4 space-y-2">
-              <div className="flex justify-between items-baseline">
-                <span className="font-mono text-xs font-bold text-black/75">
-                  {activeItem.code}
-                </span>
-                <span className="font-mono text-xs font-bold text-black">
-                  Est. {activeItem.year}
-                </span>
-              </div>
-
-              <h3 className="text-xl font-bold text-black">
+            <div className="border-t border-dashed border-black/40 px-6 py-4">
+              <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black">
                 {activeItem.title}
               </h3>
-
-              <p className="text-xs text-black/85">
-                <span className="font-semibold text-black">Material:</span>{" "}
-                {activeItem.material}
-              </p>
-
-              <div className="flex items-center justify-between text-[11px] font-mono text-black/75 pt-1">
-                <span>{activeItem.edition}</span>
-                {activeGlbUrl && (
-                  <span className="text-emerald-700 font-bold">
-                    ✓ 3D Mesh Attached
-                  </span>
-                )}
-              </div>
             </div>
           </div>
         </div>

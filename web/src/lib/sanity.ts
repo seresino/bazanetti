@@ -31,7 +31,7 @@ export interface SanityFetchResult<T> {
 // Fetch Works from Sanity without mock fallback
 export async function fetchSanityWorks(): Promise<SanityFetchResult<Project>> {
   try {
-    const query = `*[_type in ["work", "project"]] | order(year desc, _createdAt desc) {
+    const query = `*[_type in ["work", "project"]] | order(coalesce(order, 9999) asc, year desc, _createdAt desc) {
       _id,
       "slug": coalesce(slug.current, _id),
       title,
@@ -301,6 +301,7 @@ export interface BrandSettings {
   emailAddress?: string | null;
   instagramUrl?: string | null;
   icons: BrandIcons;
+  wordIcons: BrandIcons;
 }
 
 // Fetch Brand, Identity, and Navigation Icons from Sanity
@@ -315,6 +316,7 @@ export async function fetchBrandSettings(): Promise<{
     vault: null,
     rings: null,
   };
+  const emptyWordIcons: BrandIcons = { ...emptyIcons };
 
   try {
     const query = `{
@@ -390,6 +392,7 @@ export async function fetchBrandSettings(): Promise<{
           emailAddress: null,
           instagramUrl: null,
           icons: emptyIcons,
+          wordIcons: emptyWordIcons,
         },
         error: null,
       };
@@ -447,6 +450,8 @@ export async function fetchBrandSettings(): Promise<{
       vault: data?.vaultIconUrl || null,
       rings: data?.ringsIconUrl || null,
     };
+    // "Shop Word"-style entries hold the wordmark image used on hover/home
+    const resolvedWordIcons: BrandIcons = { ...emptyWordIcons };
 
     const allIconItems = [
       ...(data?.iconsArray || []),
@@ -496,31 +501,31 @@ export async function fetchBrandSettings(): Promise<{
       }
 
       if (iconUrl) {
-        if (
-          !resolvedIcons.shop &&
-          (label === "shop" || label.includes("shop"))
-        ) {
-          resolvedIcons.shop = iconUrl;
+        const target = label.includes("word")
+          ? resolvedWordIcons
+          : resolvedIcons;
+        if (!target.shop && (label === "shop" || label.includes("shop"))) {
+          target.shop = iconUrl;
         } else if (
-          !resolvedIcons.info &&
+          !target.info &&
           (label === "info" || label.includes("info"))
         ) {
-          resolvedIcons.info = iconUrl;
+          target.info = iconUrl;
         } else if (
-          !resolvedIcons.works &&
+          !target.works &&
           (label === "works" || label === "work" || label.includes("work"))
         ) {
-          resolvedIcons.works = iconUrl;
+          target.works = iconUrl;
         } else if (
-          !resolvedIcons.vault &&
+          !target.vault &&
           (label === "vault" || label.includes("vault"))
         ) {
-          resolvedIcons.vault = iconUrl;
+          target.vault = iconUrl;
         } else if (
-          !resolvedIcons.rings &&
+          !target.rings &&
           (label === "rings" || label === "ring" || label.includes("ring"))
         ) {
-          resolvedIcons.rings = iconUrl;
+          target.rings = iconUrl;
         }
       }
     }
@@ -534,6 +539,7 @@ export async function fetchBrandSettings(): Promise<{
         emailAddress: data?.emailAddress || null,
         instagramUrl: data?.instagramUrl || null,
         icons: resolvedIcons,
+        wordIcons: resolvedWordIcons,
       },
       error: null,
     };
@@ -548,6 +554,7 @@ export async function fetchBrandSettings(): Promise<{
         emailAddress: null,
         instagramUrl: null,
         icons: emptyIcons,
+        wordIcons: emptyWordIcons,
       },
       error: err?.message || String(err),
     };

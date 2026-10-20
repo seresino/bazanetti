@@ -12,6 +12,7 @@ export interface Product {
   currency: string;
   image: string;
   altImage?: string;
+  images?: string[];
   material: string;
   gemstones: string;
   sizes: string[];

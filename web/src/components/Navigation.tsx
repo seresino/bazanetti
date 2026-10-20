@@ -91,11 +91,18 @@ export function Navigation({ activeTab, onSelectTab }: NavigationProps) {
                 title={item.label}
               >
                 {item.src ? (
-                  <img
-                    src={item.src}
-                    alt={item.label}
-                    className={`${item.iconClass} object-contain brightness-0 invert transition-transform group-hover:scale-110`}
-                  />
+                  <span className="relative inline-block">
+                    <img
+                      src={item.src}
+                      alt={item.label}
+                      className={`${item.iconClass} object-contain brightness-0 invert transition-transform group-hover:scale-110`}
+                    />
+                    {item.tab !== "home" && (
+                      <span className="absolute left-1/2 bottom-[-50%] -translate-x-1/2 mix-blend-difference text-white text-xl md:text-2xl font-bold lowercase tracking-tight pointer-events-none select-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        {item.label}
+                      </span>
+                    )}
+                  </span>
                 ) : (
                   <span className={item.fallbackClass}>
                     {item.fallbackText}

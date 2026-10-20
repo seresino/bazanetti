@@ -173,7 +173,7 @@ export function InfoView() {
         </div>
 
         {status === "success" ? (
-          <div className="border border-black bg-black/2 p-8 text-center space-y-4 animate-fade-in">
+          <div className="border border-black bg-white p-8 text-center space-y-4 animate-fade-in">
             <CheckCircle2 className="w-10 h-10 text-black mx-auto" />
             <h4 className="text-xl font-black uppercase text-black">
               Inquiry Received

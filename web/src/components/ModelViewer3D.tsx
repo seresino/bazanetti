@@ -36,24 +36,18 @@ declare global {
   }
 }
 
+const ROTATION_RAD_PER_SEC = (25 * Math.PI) / 180;
+
 interface ModelViewer3DProps {
   src: string;
   poster?: string;
   title: string;
-  onUploadCustomGlb?: (file: File) => void;
 }
 
-export function ModelViewer3D({
-  src,
-  poster,
-  title,
-  onUploadCustomGlb,
-}: ModelViewer3DProps) {
+export function ModelViewer3D({ src, poster, title }: ModelViewer3DProps) {
   const modelViewerRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [autoRotate, setAutoRotate] = useState(true);
   const [hasInteracted, setHasInteracted] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const viewer = modelViewerRef.current;
@@ -76,25 +70,29 @@ export function ModelViewer3D({
     };
   }, [src]);
 
-  const handleResetCamera = () => {
-    const viewer = modelViewerRef.current;
-    if (viewer && viewer.resetTurntableRotation) {
-      viewer.resetTurntableRotation();
-    }
-    if (viewer) {
-      viewer.cameraOrbit = "0deg 75deg 105%";
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && onUploadCustomGlb) {
-      onUploadCustomGlb(file);
-    }
-  };
+  // Drive the turntable per-frame from the moment the model loads — the
+  // auto-rotate attribute eases in and lags several seconds before starting.
+  useEffect(() => {
+    if (!isLoaded || hasInteracted) return;
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const viewer = modelViewerRef.current;
+      if (viewer) {
+        const orbit = viewer.getCameraOrbit();
+        orbit.theta += ((now - last) / 1000) * ROTATION_RAD_PER_SEC;
+        viewer.cameraOrbit = orbit.toString();
+        viewer.jumpCameraToGoal();
+      }
+      last = now;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [isLoaded, hasInteracted]);
 
   return (
-    <div className="relative w-full h-full bg-[#f8f8f8] flex items-center justify-center select-none overflow-hidden group">
+    <div className="relative w-full h-full bg-white flex items-center justify-center select-none overflow-hidden group">
       {/* 3D Model Viewer Canvas */}
       <model-viewer
         ref={modelViewerRef}
@@ -102,8 +100,7 @@ export function ModelViewer3D({
         poster={poster}
         alt={`3D Model of ${title}`}
         camera-controls=""
-        auto-rotate={autoRotate ? "" : undefined}
-        rotation-per-second="25deg"
+        camera-orbit="180deg 75deg 105%"
         touch-action="pan-y"
         shadow-intensity="1.2"
         exposure="1.05"
@@ -111,7 +108,7 @@ export function ModelViewer3D({
         style={{
           width: "100%",
           height: "100%",
-          backgroundColor: "#f7f7f7",
+          backgroundColor: "#ffffff",
           outline: "none",
           cursor: "grab",
         }}
@@ -134,57 +131,6 @@ export function ModelViewer3D({
           </span>
         </div>
       )}
-
-      {/* 3D Control Bar (Bottom Left & Right) */}
-      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
-        {/* Left: Status / Format Pill */}
-        <div className="pointer-events-auto flex items-center gap-1.5 bg-black/80 text-white px-2.5 py-1 text-[10px] font-mono tracking-wider">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-          <span>INTERACTIVE 3D (.GLB)</span>
-        </div>
-
-        {/* Right: Controls (Auto-spin toggle, Reset, Test Custom File) */}
-        <div className="pointer-events-auto flex items-center gap-1 bg-white/95 border border-black/20 p-1 shadow-sm">
-          <button
-            onClick={() => setAutoRotate(!autoRotate)}
-            className={`px-2 py-1 text-[9px] font-mono uppercase tracking-wider font-bold transition-colors cursor-pointer ${
-              autoRotate
-                ? "bg-black text-white"
-                : "bg-transparent text-black hover:bg-black/5"
-            }`}
-            title="Toggle Auto-Rotation"
-          >
-            {autoRotate ? "Auto-Spin: ON" : "Auto-Spin: OFF"}
-          </button>
-
-          <button
-            onClick={handleResetCamera}
-            className="px-2 py-1 text-[9px] font-mono uppercase tracking-wider font-bold text-black hover:bg-black/5 transition-colors cursor-pointer"
-            title="Reset View"
-          >
-            Reset
-          </button>
-
-          {onUploadCustomGlb && (
-            <>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="px-2 py-1 text-[9px] font-mono uppercase tracking-wider font-bold bg-neutral-100 hover:bg-neutral-200 text-black border-l border-black/10 transition-colors cursor-pointer"
-                title="Test with your own .glb file"
-              >
-                Test .GLB
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".glb,.gltf"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

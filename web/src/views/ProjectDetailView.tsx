@@ -52,6 +52,14 @@ function GalleryAsset({
   return <img src={url} alt={alt} className="w-full h-auto" loading="lazy" />;
 }
 
+// Per-item width/offset cycle so the gallery reads scattered rather than gridded
+const SCATTER = [
+  "w-[80%]",
+  "w-[65%] ml-auto",
+  "w-[55%]",
+  "w-[70%] ml-auto md:mt-16",
+];
+
 interface ProjectDetailViewProps {
   project: Project;
   onBack: () => void;
@@ -77,7 +85,7 @@ export function ProjectDetailView({ project, onBack }: ProjectDetailViewProps) {
         <img
           src={project.heroImage}
           alt={project.title}
-          className="h-screen w-auto max-w-full border border-black/10 bg-black/5"
+          className="h-screen w-full object-cover"
         />
       </div>
 
@@ -102,12 +110,13 @@ export function ProjectDetailView({ project, onBack }: ProjectDetailViewProps) {
         </div>
       </div>
 
-      {/* Full gallery: masonry via CSS columns, natural aspect ratios preserved */}
-      <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 my-8">
+      {/* Full gallery: loose 2-col masonry with scattered widths/offsets —
+          natural aspect ratios preserved, editorial "random" spacing */}
+      <div className="columns-1 sm:columns-2 gap-12 md:gap-16 my-12">
         {project.detailMedia.map((media, i) => (
           <div
             key={i}
-            className="break-inside-avoid mb-6 border border-black/10 bg-black/5"
+            className={`break-inside-avoid mb-14 md:mb-20 bg-white ${SCATTER[i % SCATTER.length]}`}
           >
             <GalleryAsset media={media} alt={`${project.title} — ${i + 1}`} />
           </div>

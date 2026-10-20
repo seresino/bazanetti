@@ -97,7 +97,7 @@ export function WorksView({ onSelectProject }: WorksViewProps) {
                   className={`${pattern.colSpan} group cursor-pointer space-y-3`}
                 >
                   <div
-                    className={`relative ${pattern.aspect} overflow-hidden border border-black/10 bg-black/5`}
+                    className={`relative ${pattern.aspect} overflow-hidden border border-black/10 bg-white`}
                   >
                     {project.coverImage ? (
                       <img
@@ -107,7 +107,7 @@ export function WorksView({ onSelectProject }: WorksViewProps) {
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-neutral-100 text-center font-mono text-xs">
+                      <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-white text-center font-mono text-xs">
                         <span className="font-bold">{project.title}</span>
                         <span className="text-[10px] text-neutral-500 mt-1">
                           [No image uploaded in Sanity]

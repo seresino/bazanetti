@@ -104,6 +104,7 @@ export default function App() {
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [swipeIn, setSwipeIn] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("bazanetti_cart", JSON.stringify(cartItems));
@@ -184,76 +185,101 @@ export default function App() {
   const showHeader = activeTab !== "landing" && activeTab !== "home";
 
   return (
-    <div
-      className={`relative bg-white text-black selection:bg-black selection:text-white flex flex-col justify-between ${
-        // Vault fills exactly one viewport (header + grid + footer) so the
-        // wheel can drive the archive horizontally without any vertical scroll
-        activeTab === "vault" ? "h-screen overflow-hidden" : "min-h-screen"
-      }`}
-    >
-      {/* 1. Header: Full width across screen, only on shop, works, vault, info, project */}
-      {showHeader && (
-        <Navigation activeTab={activeTab} onSelectTab={selectTab} />
+    <>
+      {/* During the landing→home transition, keep the landing page mounted
+          underneath so the homepage visibly swipes up over it */}
+      {swipeIn && (
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
+        >
+          <LandingView onEnter={() => {}} />
+        </div>
       )}
+      <div
+        className={`relative bg-white text-black selection:bg-black selection:text-white flex flex-col justify-between ${
+          swipeIn ? "animate-page-swipe-up " : ""
+        }${
+          // Vault fills exactly one viewport (header + grid + footer) so the
+          // wheel can drive the archive horizontally without any vertical scroll
+          activeTab === "vault" ? "h-screen overflow-hidden" : "min-h-screen"
+        }`}
+      >
+        {/* 1. Header: Full width across screen, only on shop, works, vault, info, project */}
+        {showHeader && (
+          <Navigation activeTab={activeTab} onSelectTab={selectTab} />
+        )}
 
-      {/* 2. Middle Body: On Info, the BAZANETTI masthead spans the full viewport width
+        {/* 2. Middle Body: On Info, the BAZANETTI masthead spans the full viewport width
           and the ribbons only begin beneath it; elsewhere ribbons fill the space
           between header and footer (hidden on landing) */}
-      <div className="relative flex-1 w-full flex flex-col">
-        {activeTab === "info" && <InfoMasthead />}
-        <div className="relative flex-1 w-full flex">
-          {activeTab !== "landing" && <SideTicker side="left" />}
+        <div className="relative flex-1 w-full flex flex-col">
+          {activeTab === "info" && <InfoMasthead />}
+          <div className="relative flex-1 w-full flex">
+            {activeTab !== "landing" && <SideTicker side="left" />}
 
-          {/* Dynamic View Presentation */}
-          <main className="flex-1 w-full min-w-0">
-            {activeTab === "landing" && (
-              <LandingView onEnter={() => navigate("/home")} />
-            )}
+            {/* Dynamic View Presentation */}
+            <main className="flex-1 w-full min-w-0">
+              {activeTab === "landing" && (
+                <LandingView
+                  onEnter={() => {
+                    setSwipeIn(true);
+                    navigate("/home");
+                    setTimeout(() => setSwipeIn(false), 700);
+                  }}
+                />
+              )}
 
-            {activeTab === "home" && <HomeView onSelectTab={selectTab} />}
+              {activeTab === "home" && <HomeView onSelectTab={selectTab} />}
 
-            {activeTab === "shop" && <ShopView onAddToCart={handleAddToCart} />}
+              {activeTab === "shop" && (
+                <ShopView
+                  onAddToCart={handleAddToCart}
+                  onOpenCart={() => setIsCartOpen(true)}
+                />
+              )}
 
-            {activeTab === "works" && (
-              <WorksView onSelectProject={handleSelectProject} />
-            )}
+              {activeTab === "works" && (
+                <WorksView onSelectProject={handleSelectProject} />
+              )}
 
-            {activeTab === "project" && (
-              <ProjectDetailRoute onBack={() => navigate("/works")} />
-            )}
+              {activeTab === "project" && (
+                <ProjectDetailRoute onBack={() => navigate("/works")} />
+              )}
 
-            {activeTab === "vault" && <VaultView />}
+              {activeTab === "vault" && <VaultView />}
 
-            {activeTab === "info" && <InfoView />}
-          </main>
+              {activeTab === "info" && <InfoView />}
+            </main>
 
-          {activeTab !== "landing" && <SideTicker side="right" />}
+            {activeTab !== "landing" && <SideTicker side="right" />}
+          </div>
         </div>
+
+        {/* 3. Global Footer: Full width across screen (hidden on landing page) */}
+        {activeTab !== "landing" && <Footer onSelectTab={selectTab} />}
+
+        {/* Slide-over Cart Drawer */}
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          items={cartItems}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onCheckout={handleCheckout}
+        />
+
+        {/* Floating Notification Toast */}
+        {toastMessage && (
+          <div
+            role="status"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-black text-white text-xs font-bold uppercase tracking-wider px-5 py-3 shadow-2xl border border-white/20 animate-fade-in flex items-center gap-2"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>{toastMessage}</span>
+          </div>
+        )}
       </div>
-
-      {/* 3. Global Footer: Full width across screen (hidden on landing page) */}
-      {activeTab !== "landing" && <Footer onSelectTab={selectTab} />}
-
-      {/* Slide-over Cart Drawer */}
-      <CartDrawer
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        items={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-        onCheckout={handleCheckout}
-      />
-
-      {/* Floating Notification Toast */}
-      {toastMessage && (
-        <div
-          role="status"
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-black text-white text-xs font-bold uppercase tracking-wider px-5 py-3 shadow-2xl border border-white/20 animate-fade-in flex items-center gap-2"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span>{toastMessage}</span>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
