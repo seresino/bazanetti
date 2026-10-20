@@ -1,3 +1,10 @@
+export interface ProductVariant {
+  id: string; // numeric Shopify variant id, used in cart permalinks
+  title: string;
+  availableForSale: boolean;
+  price: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -8,8 +15,10 @@ export interface Product {
   material: string;
   gemstones: string;
   sizes: string[];
+  variantLabel?: string;
   description: string;
   inStock: boolean;
+  variants?: ProductVariant[];
 }
 
 export interface GalleryMedia {
@@ -47,6 +56,7 @@ export interface CartItem {
   product: Product;
   size: string;
   quantity: number;
+  variantId?: string;
 }
 
 export interface OrderFormData {

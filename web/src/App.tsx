@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ActiveTab, Product, Project, CartItem } from "./types";
 import { fetchSanityWorks } from "./lib/sanity";
+import { buildShopifyCartUrl, shopifyConfigured } from "./lib/shopify";
 import { Navigation } from "./components/Navigation";
 import { SideTicker } from "./components/SideTicker";
 import { Footer } from "./components/Footer";
@@ -125,7 +126,8 @@ export default function App() {
             : item,
         );
       }
-      return [...prev, { product, size, quantity: 1 }];
+      const variantId = product.variants?.find((v) => v.title === size)?.id;
+      return [...prev, { product, size, quantity: 1, variantId }];
     });
     showToast(`Added ${product.name} (${size}) to Bag`);
   };
@@ -152,7 +154,17 @@ export default function App() {
   };
 
   const handleCheckout = () => {
-    showToast("Redirecting to secure Shopify Storefront checkout...");
+    const url = buildShopifyCartUrl(cartItems);
+    if (!url) {
+      showToast(
+        shopifyConfigured()
+          ? "Bag items can't be checked out — missing product variants"
+          : "Shop is not connected to Shopify yet",
+      );
+      return;
+    }
+    showToast("Redirecting to secure Shopify checkout...");
+    window.location.href = url;
   };
 
   const selectTab = (tab: ActiveTab) => navigate(tabToPath[tab]);

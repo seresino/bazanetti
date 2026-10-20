@@ -1,21 +1,40 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Product } from "../types";
 import { FullScreenEmblemHero } from "../components/FullScreenEmblemHero";
+import { fetchShopifyProducts } from "../lib/shopify";
 
 interface ShopViewProps {
   onAddToCart: (product: Product, size: string) => void;
 }
 
 export function ShopView({ onAddToCart }: ShopViewProps) {
-  const [products] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("M");
+
+  useEffect(() => {
+    fetchShopifyProducts().then((res) => {
+      setProducts(res.products);
+      setError(res.error);
+      setLoading(false);
+    });
+  }, []);
 
   const handleModalAdd = () => {
     if (!selectedProduct) return;
     onAddToCart(selectedProduct, selectedSize);
     setSelectedProduct(null);
   };
+
+  const selectedVariant = selectedProduct?.variants?.find(
+    (v) => v.title === selectedSize,
+  );
+  const displayPrice = selectedVariant?.price ?? selectedProduct?.price ?? 0;
+  const canBuy = selectedVariant
+    ? selectedVariant.availableForSale
+    : (selectedProduct?.inStock ?? false);
 
   return (
     <div className="w-full">
@@ -33,7 +52,17 @@ export function ShopView({ onAddToCart }: ShopViewProps) {
           id="shop-product-grid"
           className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-l border-r border-dashed border-black/40"
         >
-          {products.length === 0 && (
+          {loading && (
+            <div className="col-span-full py-24 text-center text-xs font-bold uppercase tracking-wider text-black/50">
+              Loading products…
+            </div>
+          )}
+          {!loading && error && (
+            <div className="col-span-full py-24 text-center text-xs font-bold uppercase tracking-wider text-red-700">
+              {error}
+            </div>
+          )}
+          {!loading && !error && products.length === 0 && (
             <div className="col-span-full py-24 text-center text-xs font-bold uppercase tracking-wider text-black/50">
               No products available yet.
             </div>
@@ -103,7 +132,7 @@ export function ShopView({ onAddToCart }: ShopViewProps) {
                   </h3>
                   <p className="font-mono text-xl font-bold text-black mt-2">
                     {selectedProduct.currency}
-                    {selectedProduct.price.toFixed(2)}
+                    {displayPrice.toFixed(2)}
                   </p>
 
                   <p className="text-xs text-black/85 leading-relaxed mt-4">
@@ -125,37 +154,41 @@ export function ShopView({ onAddToCart }: ShopViewProps) {
                     </p>
                   </div>
 
-                  {/* Size Selector */}
-                  <div className="mt-5">
-                    <label className="block text-[11px] font-black uppercase tracking-wider text-black mb-2">
-                      Select Ring Size (UK):
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedProduct.sizes.map((sz) => (
-                        <button
-                          key={sz}
-                          onClick={() => setSelectedSize(sz)}
-                          className={`px-3 py-1 text-xs font-bold border transition-all cursor-pointer ${
-                            selectedSize === sz
-                              ? "bg-black text-white border-black"
-                              : "border-black/30 text-black hover:border-black"
-                          }`}
-                        >
-                          {sz}
-                        </button>
-                      ))}
+                  {/* Variant Selector (hidden for single-variant products) */}
+                  {selectedProduct.sizes.length > 1 && (
+                    <div className="mt-5">
+                      <label className="block text-[11px] font-black uppercase tracking-wider text-black mb-2">
+                        Select {selectedProduct.variantLabel || "Option"}:
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedProduct.sizes.map((sz) => (
+                          <button
+                            key={sz}
+                            onClick={() => setSelectedSize(sz)}
+                            className={`px-3 py-1 text-xs font-bold border transition-all cursor-pointer ${
+                              selectedSize === sz
+                                ? "bg-black text-white border-black"
+                                : "border-black/30 text-black hover:border-black"
+                            }`}
+                          >
+                            {sz}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 <button
                   id="modal-add-to-cart"
                   onClick={handleModalAdd}
-                  className="w-full bg-black text-white py-3.5 text-xs font-black uppercase tracking-[0.25em] hover:bg-black/90 active:scale-[0.99] transition-all cursor-pointer mt-6 flex items-center justify-center"
+                  disabled={!canBuy}
+                  className="w-full bg-black text-white py-3.5 text-xs font-black uppercase tracking-[0.25em] hover:bg-black/90 active:scale-[0.99] transition-all cursor-pointer mt-6 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <span>
-                    Add to Bag — {selectedProduct.currency}
-                    {selectedProduct.price.toFixed(2)}
+                    {canBuy
+                      ? `Add to Bag — ${selectedProduct.currency}${displayPrice.toFixed(2)}`
+                      : "Sold Out"}
                   </span>
                 </button>
               </div>

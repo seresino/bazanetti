@@ -2,7 +2,9 @@
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "build": {
     "env": {
-      "VITE_FORM_ENDPOINT": "https://formspree.io/f/xrperkow"
+      "VITE_FORM_ENDPOINT": "https://formspree.io/f/xrperkow",
+      "VITE_SHOPIFY_STORE_DOMAIN": "5xhgyh-dt.myshopify.com",
+      "VITE_SHOPIFY_STOREFRONT_TOKEN": "1bcfda93213e5b126fe25656c12ad5e5"
     }
   }
 }
