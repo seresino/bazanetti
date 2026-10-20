@@ -1,6 +1,8 @@
 {
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-  "env": {
-    "VITE_FORM_ENDPOINT": "https://formspree.io/f/xrperkow"
+  "build": {
+    "env": {
+      "VITE_FORM_ENDPOINT": "https://formspree.io/f/xrperkow"
+    }
   }
 }
