@@ -45,6 +45,16 @@ export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
     }
   }, [selectedProduct]);
 
+  // Lock page scroll behind the modal (stops mobile chrome-collapse jolts)
+  useEffect(() => {
+    if (!selectedProduct) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [selectedProduct]);
+
   const handleModalAdd = () => {
     if (!selectedProduct) return;
     onAddToCart(selectedProduct, selectedSize);
@@ -156,7 +166,7 @@ export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-white/95 backdrop-blur-xs">
           <div
-            className="relative bg-white w-full max-w-6xl border border-black"
+            className="relative bg-white w-full max-w-6xl max-h-full my-auto border border-black overflow-y-auto"
             onClick={(e) => {
               e.stopPropagation();
               setInfoPanel(null);

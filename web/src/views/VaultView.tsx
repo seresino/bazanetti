@@ -150,20 +150,52 @@ export function VaultView() {
     const strip = gridRef.current;
     if (!strip) return;
 
+    const maxScroll = () => strip.scrollWidth - strip.clientWidth;
+    const canScroll = (delta: number) =>
+      delta > 0 ? strip.scrollLeft < maxScroll() - 1 : strip.scrollLeft > 0;
+
     const onWheel = (e: WheelEvent) => {
       const delta =
         Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-      const max = strip.scrollWidth - strip.clientWidth;
-      const canScroll =
-        delta > 0 ? strip.scrollLeft < max - 1 : strip.scrollLeft > 0;
-      if (canScroll) {
+      if (canScroll(delta)) {
         e.preventDefault();
         strip.scrollLeft += delta;
       }
     };
 
+    // Same mapping for touch: a vertical drag over the strip moves the
+    // items horizontally; native horizontal swipes still work untouched.
+    let lastY = 0;
+    let touchActive = false;
+    const onTouchStart = (e: TouchEvent) => {
+      lastY = e.touches[0].clientY;
+      touchActive = true;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!touchActive) return;
+      const dy = lastY - e.touches[0].clientY;
+      lastY = e.touches[0].clientY;
+      if (dy !== 0 && canScroll(dy)) {
+        e.preventDefault();
+        strip.scrollLeft += dy;
+      }
+    };
+    const onTouchEnd = () => {
+      touchActive = false;
+    };
+
     strip.addEventListener("wheel", onWheel, { passive: false });
-    return () => strip.removeEventListener("wheel", onWheel);
+    strip.addEventListener("touchstart", onTouchStart, { passive: true });
+    strip.addEventListener("touchmove", onTouchMove, { passive: false });
+    strip.addEventListener("touchend", onTouchEnd, { passive: true });
+    strip.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    return () => {
+      strip.removeEventListener("wheel", onWheel);
+      strip.removeEventListener("touchstart", onTouchStart);
+      strip.removeEventListener("touchmove", onTouchMove);
+      strip.removeEventListener("touchend", onTouchEnd);
+      strip.removeEventListener("touchcancel", onTouchEnd);
+    };
   }, []);
 
   return (

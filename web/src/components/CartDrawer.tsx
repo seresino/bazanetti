@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { CartItem } from "../types";
 import { X, Trash2, ShieldCheck } from "lucide-react";
 import { TagButton } from "./TagButton";
@@ -24,6 +24,16 @@ export function CartDrawer({
   note,
   onNoteChange,
 }: CartDrawerProps) {
+  // Lock page scroll behind the drawer (stops mobile chrome-collapse jolts)
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const subtotal = items.reduce(
