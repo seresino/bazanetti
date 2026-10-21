@@ -169,13 +169,13 @@ export function VaultView() {
           and scrolls horizontally when the wheel is used over it */}
       <section
         aria-label="Vault archive"
-        className="relative w-full min-h-[calc(100vh-73px)] flex items-center bg-white overflow-hidden select-none"
+        className="relative w-full min-h-[calc(100vh-80px)] md:min-h-[calc(100vh-100px)] flex items-center bg-white overflow-hidden select-none"
       >
         {/* Horizontally scrolling two-row strip of vault items */}
         <div
           ref={gridRef}
           id="vault-archive-grid"
-          className="w-full overflow-x-auto overflow-y-hidden py-6 -translate-y-4 md:-translate-y-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="w-full overflow-x-auto overflow-y-hidden py-6 -translate-y-5 md:-translate-y-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {loading && (
             <div className="w-full py-24 text-center text-xs font-bold uppercase tracking-wider text-black/50">

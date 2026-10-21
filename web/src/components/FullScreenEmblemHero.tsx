@@ -21,7 +21,7 @@ export function FullScreenEmblemHero({
   return (
     <section
       aria-label={`${label} entry`}
-      className="w-full min-h-[calc(100vh-73px)] flex flex-col justify-center items-center bg-white select-none px-4"
+      className="w-full min-h-[calc(100vh-80px)] md:min-h-[calc(100vh-100px)] flex flex-col justify-center items-center bg-white select-none px-4"
     >
       {/* Fixed-size emblem SVG: identical on every page regardless of label */}
       <img
