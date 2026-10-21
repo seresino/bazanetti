@@ -175,7 +175,7 @@ export function VaultView() {
         <div
           ref={gridRef}
           id="vault-archive-grid"
-          className="w-full overflow-x-auto overflow-y-hidden py-6 -translate-y-5 md:-translate-y-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="w-full overflow-x-auto overflow-y-hidden py-6 -translate-y-[44px] md:-translate-y-[62px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {loading && (
             <div className="w-full py-24 text-center text-xs font-bold uppercase tracking-wider text-black/50">
@@ -229,7 +229,7 @@ export function VaultView() {
                 behavior: "smooth",
               })
             }
-            className="h-14 sm:h-[88px] md:h-[104px] w-auto pointer-events-auto hover:cursor-pointer"
+            className="h-14 sm:h-[88px] md:h-[104px] w-auto pointer-events-auto hover:cursor-pointer -translate-y-6 md:-translate-y-8"
           />
         </div>
       </section>
