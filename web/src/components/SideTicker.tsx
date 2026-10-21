@@ -57,7 +57,7 @@ export function SideTicker({ side, hasHeader = false }: SideTickerProps) {
               className="font-haas text-[12px] font-normal leading-none tracking-[0.05em] uppercase text-center text-black rotate-360"
               style={{ writingMode: "vertical-lr" }}
             >
-              JEWELLERY &amp; OBJECTS
+              {brand.tagline || "JEWELLERY & OBJECTS"}
             </span>
             <span className="w-2.5 h-2.5 rounded-full bg-black"></span>
             <span
@@ -71,7 +71,7 @@ export function SideTicker({ side, hasHeader = false }: SideTickerProps) {
               className="font-haas text-[12px] font-normal leading-none tracking-[0.05em] uppercase text-center text-black rotate-360"
               style={{ writingMode: "vertical-lr" }}
             >
-              REALISED IN LONDON
+              {brand.locationTagline || "REALISED IN LONDON"}
             </span>
             {brand.monogramEmblem ? (
               <img

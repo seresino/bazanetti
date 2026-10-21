@@ -166,7 +166,7 @@ export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-white/95 backdrop-blur-xs">
           <div
-            className="relative bg-white w-full max-w-6xl max-h-full my-auto border border-black overflow-y-auto"
+            className="relative bg-white w-full max-w-6xl my-auto border border-black flex flex-col h-[calc(100dvh-2rem)] sm:h-[calc(100dvh-4rem)] md:h-auto md:max-h-full overflow-hidden md:overflow-y-auto"
             onClick={(e) => {
               e.stopPropagation();
               setInfoPanel(null);
@@ -180,12 +180,12 @@ export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
               <X className="w-5 h-5" />
             </button>
 
-            <div className="grid grid-cols-1 md:grid-cols-2">
+            <div className="flex-1 min-h-0 grid grid-cols-1 grid-rows-2 md:grid-rows-1 md:grid-cols-2">
               {/* Left: vertically scrolling image gallery, or policy text
                   when a returns/shipping/sizing button is active */}
-              <div className="relative min-h-[40vh] md:min-h-[70vh]">
+              <div className="relative min-h-0">
                 {infoPanel ? (
-                  <div className="h-[40vh] md:h-[70vh] overflow-y-auto p-6 md:p-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="h-full md:h-[70vh] overflow-y-auto p-6 md:p-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <h4 className="text-xs font-black uppercase tracking-widest text-black mb-4">
                       {infoPanel}
                     </h4>
@@ -259,12 +259,12 @@ export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
                     )}
                   </div>
                 ) : (
-                  <div className="h-[40vh] md:h-[70vh] overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="flex flex-col gap-8">
+                  <div className="h-full md:h-[70vh] overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="flex flex-col gap-8 h-full">
                       {productImages.map((src, i) => (
                         <div
                           key={src + i}
-                          className="h-[40vh] md:h-[70vh] shrink-0 snap-center flex items-center justify-center"
+                          className="h-full shrink-0 snap-center flex items-center justify-center"
                         >
                           <img
                             src={src}
@@ -278,88 +278,90 @@ export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
                 )}
               </div>
 
-              {/* Right: details, dashed vertical divider */}
-              <div className="border-t md:border-t-0 md:border-l border-dashed border-black/40 p-8 md:p-12 flex flex-col justify-center space-y-6">
-                <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-black">
-                  {selectedProduct.name}
-                </h3>
+              {/* Right: details, dashed vertical divider — scrolls
+                  independently within its half on mobile */}
+              <div className="border-t md:border-t-0 md:border-l border-dashed border-black/40 min-h-0 overflow-y-auto md:overflow-visible">
+                <div className="p-8 md:p-12 min-h-full flex flex-col justify-center space-y-6">
+                  <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-black">
+                    {selectedProduct.name}
+                  </h3>
 
-                {detailLines.length > 0 && (
-                  <ul className="list-disc pl-5 space-y-1 text-xs md:text-sm font-haas uppercase text-black/90">
-                    {detailLines.map((line, i) => (
-                      <li key={i}>{line}</li>
-                    ))}
-                  </ul>
-                )}
+                  {detailLines.length > 0 && (
+                    <ul className="list-disc pl-5 space-y-1 text-xs md:text-sm font-haas uppercase text-black/90">
+                      {detailLines.map((line, i) => (
+                        <li key={i}>{line}</li>
+                      ))}
+                    </ul>
+                  )}
 
-                {selectedProduct.sizes.length > 1 && (
-                  <div>
-                    <label className="block text-[11px] font-black uppercase tracking-wider text-black mb-2">
-                      Select {selectedProduct.variantLabel || "Option"}:
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedProduct.sizes.map((sz) => (
+                  {selectedProduct.sizes.length > 1 && (
+                    <div>
+                      <label className="block text-[11px] font-black uppercase tracking-wider text-black mb-2">
+                        Select {selectedProduct.variantLabel || "Option"}:
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedProduct.sizes.map((sz) => (
+                          <button
+                            key={sz}
+                            onClick={() => setSelectedSize(sz)}
+                            className={`px-3 py-1 text-xs font-bold border transition-all cursor-pointer ${
+                              selectedSize === sz
+                                ? "bg-black text-white border-black"
+                                : "border-black/30 text-black hover:border-black"
+                            }`}
+                          >
+                            {sz}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="font-mono text-base text-black">
+                    {selectedProduct.currency}
+                    {displayPrice.toFixed(2)}
+                  </p>
+
+                  {/* Angled tag button — inverts on hover */}
+                  {canBuy ? (
+                    <TagButton
+                      id="modal-add-to-cart"
+                      label="Add to Cart"
+                      onClick={handleModalAdd}
+                      className="self-start"
+                    />
+                  ) : (
+                    <span className="text-black/40">Sold Out</span>
+                  )}
+
+                  {/* Policy buttons — same style as variant options; swap the
+                    left pane from imagery to text */}
+                  <div className="flex flex-wrap gap-2">
+                    {(["returns", "shipping", "sizing"] as const).map(
+                      (panel) => (
                         <button
-                          key={sz}
-                          onClick={() => setSelectedSize(sz)}
-                          className={`px-3 py-1 text-xs font-bold border transition-all cursor-pointer ${
-                            selectedSize === sz
+                          key={panel}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setInfoPanel(infoPanel === panel ? null : panel);
+                          }}
+                          className={`px-3 py-1 text-xs font-bold uppercase border transition-all cursor-pointer ${
+                            infoPanel === panel
                               ? "bg-black text-white border-black"
                               : "border-black/30 text-black hover:border-black"
                           }`}
                         >
-                          {sz}
+                          {panel}
                         </button>
-                      ))}
-                    </div>
+                      ),
+                    )}
                   </div>
-                )}
 
-                <p className="font-mono text-base text-black">
-                  {selectedProduct.currency}
-                  {displayPrice.toFixed(2)}
-                </p>
-
-                {/* Angled tag button — inverts on hover */}
-                {canBuy ? (
-                  <TagButton
-                    id="modal-add-to-cart"
-                    label="Add to Cart"
-                    onClick={handleModalAdd}
-                    className="self-start"
-                  />
-                ) : (
-                  <span className="text-black/40">Sold Out</span>
-                )}
-
-                {/* Policy buttons — same style as variant options; swap the
-                    left pane from imagery to text */}
-                <div className="flex flex-wrap gap-2">
-                  {(["returns", "shipping", "sizing"] as const).map((panel) => (
-                    <button
-                      key={panel}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setInfoPanel(infoPanel === panel ? null : panel);
-                      }}
-                      className={`px-3 py-1 text-xs font-bold uppercase border transition-all cursor-pointer ${
-                        infoPanel === panel
-                          ? "bg-black text-white border-black"
-                          : "border-black/30 text-black hover:border-black"
-                      }`}
-                    >
-                      {panel}
-                    </button>
-                  ))}
+                  <p className="text-xs font-haas font-normal leading-relaxed text-black/70 whitespace-pre-line">
+                    {shopInfo?.handmadeNote ||
+                      "Please note, each piece is individually handcrafted. Due to this unique process, the jewellery you receive will vary slightly from the photo on the website. No two pieces are the same.\nIf you want to change the metal or gemstones please contact us to discuss a bespoke version."}
+                  </p>
                 </div>
-
-                <p className="text-xs font-haas font-normal leading-relaxed text-black/70">
-                  Please note, each piece is individually handcrafted. Due to
-                  this unique process, the jewellery you receive will vary
-                  slightly from the photo on the website. No two pieces are the
-                  same. If you want to change the metal or gemstones please
-                  contact us to discuss a bespoke version.
-                </p>
               </div>
             </div>
           </div>

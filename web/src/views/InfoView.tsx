@@ -136,11 +136,20 @@ export function InfoView() {
         {/* Row 2, Col 1: jewellery & objects */}
         <div className="hidden sm:block text-center">
           <p className="text-[10px] font-haas font-normal uppercase text-black">
-            JEWELLERY
-            <br />
-            &amp;
-            <br />
-            OBJECTS
+            {(brand.tagline || "JEWELLERY & OBJECTS")
+              .split("&")
+              .map((part, i, arr) => (
+                <React.Fragment key={i}>
+                  {i > 0 && (
+                    <>
+                      &amp;
+                      <br />
+                    </>
+                  )}
+                  {part.trim()}
+                  {i < arr.length - 1 && <br />}
+                </React.Fragment>
+              ))}
           </p>
         </div>
 
@@ -154,11 +163,14 @@ export function InfoView() {
         {/* Row 2, Col 3: realised in london */}
         <div className="hidden sm:block text-center">
           <p className="text-[10px] font-haas font-normal uppercase text-black">
-            REALISED
-            <br />
-            IN
-            <br />
-            LONDON
+            {(brand.locationTagline || "REALISED IN LONDON")
+              .split(" ")
+              .map((word, i, arr) => (
+                <React.Fragment key={i}>
+                  {word}
+                  {i < arr.length - 1 && <br />}
+                </React.Fragment>
+              ))}
           </p>
         </div>
       </div>

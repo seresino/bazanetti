@@ -20,6 +20,13 @@ export const shopInfo = defineType({
       description: 'Shown in the product modal when the Shipping button is pressed.',
     }),
     defineField({
+      name: 'handmadeNote',
+      title: 'Handcrafted Note',
+      type: 'text',
+      rows: 4,
+      description: 'Shown in the product modal under the Returns / Shipping / Sizing buttons.',
+    }),
+    defineField({
       name: 'sizingIntro',
       title: 'Sizing Intro Text',
       type: 'text',

@@ -49,12 +49,12 @@ export function Footer({ onSelectTab }: FooterProps) {
 
           {/* Category Descriptor */}
           <p className="mt-6 sm:mt-7 text-sm sm:text-base uppercase text-black">
-            JEWELLERY &amp; OBJECTS
+            {brand.tagline || "JEWELLERY & OBJECTS"}
           </p>
 
           {/* Origin Descriptor */}
           <p className="mt-5 sm:mt-6 text-sm sm:text-base uppercase text-black">
-            REALISED IN LONDON
+            {brand.locationTagline || "REALISED IN LONDON"}
           </p>
 
           {/* Navigation Links with solid bullets */}
@@ -77,7 +77,7 @@ export function Footer({ onSelectTab }: FooterProps) {
           <div className="mt-6 sm:mt-7 text-sm sm:text-base font-medium tracking-wider uppercase text-black">
             <div className="flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-black"></span>
-              <span>INFO@BAZANETTI.COM</span>
+              <span>{brand.emailAddress || "INFO@BAZANETTI.COM"}</span>
             </div>
             {contactLinks.map(({ id, label, href, external }) => (
               <div key={id}>
@@ -113,7 +113,7 @@ export function Footer({ onSelectTab }: FooterProps) {
           {/* Bottom Row: Copyright on left, Bazanetti Emblem on right */}
           <div className="flex items-end justify-between">
             <p className="text-sm sm:text-base uppercase text-black">
-              ©2026 – RIGHTS RESERVED
+              {brand.copyrightLine || "©2026 – RIGHTS RESERVED"}
             </p>
 
             <button
@@ -142,20 +142,22 @@ export function Footer({ onSelectTab }: FooterProps) {
               BAZANETTI
             </h2>
             <p className="text-sm font-medium uppercase">
-              ©2026 – RIGHTS RESERVED
+              {brand.copyrightLine || "©2026 – RIGHTS RESERVED"}
             </p>
           </div>
 
           {/* Col 2: Category Tag */}
           <div>
             <p className="text-sm uppercase text-black">
-              JEWELLERY &amp; OBJECTS
+              {brand.tagline || "JEWELLERY & OBJECTS"}
             </p>
           </div>
 
           {/* Col 3: Origin Tag */}
           <div>
-            <p className="text-sm uppercase text-black">REALISED IN LONDON</p>
+            <p className="text-sm uppercase text-black">
+              {brand.locationTagline || "REALISED IN LONDON"}
+            </p>
           </div>
 
           {/* Col 4: Navigation Links */}
@@ -174,7 +176,7 @@ export function Footer({ onSelectTab }: FooterProps) {
             ))}
             <div className="pt-2 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-black"></span>{" "}
-              INFO@BAZANETTI.COM
+              {brand.emailAddress || "INFO@BAZANETTI.COM"}
             </div>
             {contactLinks.map(({ id, label, href, external }) => (
               <div key={id}>

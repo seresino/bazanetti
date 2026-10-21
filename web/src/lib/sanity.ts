@@ -300,6 +300,9 @@ export interface BrandSettings {
   bioText: string | null;
   emailAddress?: string | null;
   instagramUrl?: string | null;
+  tagline?: string | null;
+  locationTagline?: string | null;
+  copyrightLine?: string | null;
   icons: BrandIcons;
   wordIcons: BrandIcons;
 }
@@ -331,6 +334,9 @@ export async function fetchBrandSettings(): Promise<{
         bioText,
         emailAddress,
         instagramUrl,
+        tagline,
+        locationTagline,
+        copyrightLine,
         shopIcon,
         "shopIconUrl": shopIcon.asset->url,
         infoIcon,
@@ -538,6 +544,9 @@ export async function fetchBrandSettings(): Promise<{
         bioText: data?.bioText || null,
         emailAddress: data?.emailAddress || null,
         instagramUrl: data?.instagramUrl || null,
+        tagline: data?.tagline || null,
+        locationTagline: data?.locationTagline || null,
+        copyrightLine: data?.copyrightLine || null,
         icons: resolvedIcons,
         wordIcons: resolvedWordIcons,
       },
@@ -586,6 +595,7 @@ export interface ShopInfo {
   returnsText: string;
   shippingText: string;
   sizingIntro: string;
+  handmadeNote: string;
   ringSizes: RingSizeRow[];
   braceletSizes: BraceletSizeRow[];
   necklaceSizes: NecklaceSizeRow[];
@@ -602,6 +612,7 @@ export async function fetchShopInfo(): Promise<{
         returnsText,
         shippingText,
         sizingIntro,
+        handmadeNote,
         ringSizes[] { label, uk, usa, eu, circumferenceMm, diameterMm },
         braceletSizes[] { size, circumferenceInch, circumferenceCm },
         necklaceSizes[] { size, lengthInch, lengthCm }
@@ -611,5 +622,26 @@ export async function fetchShopInfo(): Promise<{
   } catch (err: any) {
     console.warn("[Sanity] Could not fetch shop info:", err);
     return { info: null, error: err?.message || String(err) };
+  }
+}
+
+import type { LegalPage } from "./legalContent";
+
+// Terms / Privacy — seeded legalPages singleton, structured sections
+export async function fetchLegalPages(): Promise<{
+  terms: LegalPage | null;
+  privacy: LegalPage | null;
+}> {
+  try {
+    const data = await sanityClient.fetch(
+      `*[_type == "legalPages"][0] {
+        "terms": terms { title, lastUpdated, sections[] { heading, blocks[] { lead, text } } },
+        "privacy": privacy { title, lastUpdated, sections[] { heading, blocks[] { lead, text } } }
+      }`,
+    );
+    return { terms: data?.terms ?? null, privacy: data?.privacy ?? null };
+  } catch (err: any) {
+    console.warn("[Sanity] Could not fetch legal pages:", err);
+    return { terms: null, privacy: null };
   }
 }

@@ -53,6 +53,27 @@ export const brandSettingsType = defineType({
       description: 'The brand bio paragraph displayed on the Info page.',
     }),
     defineField({
+      name: 'tagline',
+      title: 'Tagline',
+      type: 'string',
+      initialValue: 'JEWELLERY & OBJECTS',
+      description: 'Shown in the footer, side tickers, and Info page.',
+    }),
+    defineField({
+      name: 'locationTagline',
+      title: 'Location Tagline',
+      type: 'string',
+      initialValue: 'REALISED IN LONDON',
+      description: 'Shown in the footer, side tickers, and Info page.',
+    }),
+    defineField({
+      name: 'copyrightLine',
+      title: 'Copyright Line',
+      type: 'string',
+      initialValue: '©2026 – RIGHTS RESERVED',
+      description: 'Shown at the foot of the site footer.',
+    }),
+    defineField({
       name: 'emailAddress',
       title: 'Studio Contact Email',
       type: 'string',

@@ -26,6 +26,12 @@ export default defineConfig({
               .id('shopInfo')
               .child(S.document().schemaType('shopInfo').documentId('shopInfo')),
             S.divider(),
+            // Singleton for Legal Pages (terms / privacy)
+            S.listItem()
+              .title('Legal Pages')
+              .id('legalPages')
+              .child(S.document().schemaType('legalPages').documentId('legalPages')),
+            S.divider(),
             // Regular document lists for Works and Vault
             S.documentTypeListItem('work').title('Works & Projects'),
             S.documentTypeListItem('vaultItem').title('Vault Pieces'),
