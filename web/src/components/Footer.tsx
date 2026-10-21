@@ -31,6 +31,11 @@ export function Footer({ onSelectTab }: FooterProps) {
     },
   ];
 
+  const legalLinks = [
+    { tab: "terms", label: "TERMS" },
+    { tab: "privacy", label: "PRIVACY" },
+  ] as const;
+
   const goTo = (tab: ActiveTab) => {
     onSelectTab(tab);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -87,6 +92,22 @@ export function Footer({ onSelectTab }: FooterProps) {
                   <span className="w-2.5 h-2.5 rounded-full bg-black"></span>
                   <span>{label}</span>
                 </a>
+              </div>
+            ))}
+          </div>
+
+          {/* Legal Links with solid bullets */}
+          <div className="mt-6 sm:mt-7 text-sm sm:text-base uppercase text-black">
+            {legalLinks.map(({ tab, label }) => (
+              <div key={tab}>
+                <button
+                  id={`footer-mobile-link-${tab}`}
+                  onClick={() => goTo(tab)}
+                  className="hover:opacity-70 transition-opacity flex items-center gap-2.5 cursor-pointer text-left"
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-black"></span>
+                  <span>{label}</span>
+                </button>
               </div>
             ))}
           </div>
@@ -166,6 +187,18 @@ export function Footer({ onSelectTab }: FooterProps) {
                 </a>
               </div>
             ))}
+            {legalLinks.map(({ tab, label }, i) => (
+              <div key={tab} className={i === 0 ? "pt-2" : undefined}>
+                <button
+                  id={`footer-link-${tab}`}
+                  onClick={() => goTo(tab)}
+                  className="hover:underline flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-black"></span>{" "}
+                  {label}
+                </button>
+              </div>
+            ))}
           </div>
 
           {/* Col 5: Right Monogram Icon */}
@@ -174,7 +207,7 @@ export function Footer({ onSelectTab }: FooterProps) {
               id="footer-brand-monogram"
               onClick={() => goTo("home")}
               aria-label="Return to Home"
-              className="p-1 hover:opacity-75 transition-opacity cursor-pointer text-black"
+              className="px-1 -mt-2 hover:opacity-75 transition-opacity cursor-pointer text-black"
             >
               <img
                 src={brand.monogramEmblem || ""}

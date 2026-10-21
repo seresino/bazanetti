@@ -14,6 +14,7 @@ import { WorksView } from "./views/WorksView";
 import { ProjectDetailView } from "./views/ProjectDetailView";
 import { VaultView } from "./views/VaultView";
 import { InfoView, InfoMasthead } from "./views/InfoView";
+import { LegalView } from "./views/LegalView";
 
 const tabToPath: Record<ActiveTab, string> = {
   landing: "/",
@@ -22,6 +23,8 @@ const tabToPath: Record<ActiveTab, string> = {
   works: "/works",
   vault: "/vault",
   info: "/info",
+  terms: "/terms",
+  privacy: "/privacy",
   project: "/works", // detail pages live under /works/:slug
 };
 
@@ -30,6 +33,8 @@ function pathToTab(pathname: string): ActiveTab {
   if (pathname === "/shop") return "shop";
   if (pathname === "/vault") return "vault";
   if (pathname === "/info") return "info";
+  if (pathname === "/terms") return "terms";
+  if (pathname === "/privacy") return "privacy";
   if (pathname === "/works" || pathname === "/works/") return "works";
   if (pathname.startsWith("/works/")) return "project";
   return "landing";
@@ -246,6 +251,10 @@ export default function App() {
               {activeTab === "vault" && <VaultView />}
 
               {activeTab === "info" && <InfoView />}
+
+              {(activeTab === "terms" || activeTab === "privacy") && (
+                <LegalView page={activeTab} />
+              )}
             </main>
 
             {activeTab !== "landing" && <SideTicker side="right" />}

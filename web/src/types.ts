@@ -75,4 +75,6 @@ export type ActiveTab =
   | "works"
   | "vault"
   | "info"
+  | "terms"
+  | "privacy"
   | "project";
