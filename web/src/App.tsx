@@ -217,10 +217,12 @@ export default function App() {
         <div className="relative flex-1 w-full flex flex-col">
           {activeTab === "info" && <InfoMasthead />}
           <div className="relative flex-1 w-full flex">
-            {activeTab !== "landing" && <SideTicker side="left" />}
+            {activeTab !== "landing" && (
+              <SideTicker side="left" hasHeader={showHeader} />
+            )}
 
             {/* Dynamic View Presentation */}
-            <main className="flex-1 w-full min-w-0">
+            <main className="flex-1 w-full min-w-0 pb-24">
               {activeTab === "landing" && (
                 <LandingView
                   onEnter={() => {
@@ -257,7 +259,9 @@ export default function App() {
               )}
             </main>
 
-            {activeTab !== "landing" && <SideTicker side="right" />}
+            {activeTab !== "landing" && (
+              <SideTicker side="right" hasHeader={showHeader} />
+            )}
           </div>
         </div>
 

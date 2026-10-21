@@ -18,12 +18,6 @@ export function Footer({ onSelectTab }: FooterProps) {
 
   const contactLinks = [
     {
-      id: "email",
-      label: "EMAIL",
-      href: `mailto:${brand.emailAddress || "studio@bazanetti.com"}`,
-      external: false,
-    },
-    {
       id: "instagram",
       label: "INSTAGRAM",
       href: brand.instagramUrl || "https://instagram.com/bazanetti",
@@ -42,7 +36,7 @@ export function Footer({ onSelectTab }: FooterProps) {
   };
 
   return (
-    <footer className="w-full mt-24 border-t border-dashed border-black bg-white select-none font-haas font-medium">
+    <footer className="w-full border-t border-dashed border-black bg-white select-none font-haas font-medium">
       <div className="w-full px-4 sm:px-4 md:px-6 lg:px-6 py-10 md:py-14">
         {/* ========================================================= */}
         {/* 1. NARROW VIEWPORT LAYOUT (matches Figma reference image) */}
@@ -81,6 +75,10 @@ export function Footer({ onSelectTab }: FooterProps) {
 
           {/* Contact / Social Links with solid bullets */}
           <div className="mt-6 sm:mt-7 text-sm sm:text-base font-medium tracking-wider uppercase text-black">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-black"></span>
+              <span>INFO@BAZANETTI.COM</span>
+            </div>
             {contactLinks.map(({ id, label, href, external }) => (
               <div key={id}>
                 <a
@@ -174,8 +172,12 @@ export function Footer({ onSelectTab }: FooterProps) {
                 </button>
               </div>
             ))}
-            {contactLinks.map(({ id, label, href, external }, i) => (
-              <div key={id} className={i === 0 ? "pt-2" : undefined}>
+            <div className="pt-2 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-black"></span>{" "}
+              INFO@BAZANETTI.COM
+            </div>
+            {contactLinks.map(({ id, label, href, external }) => (
+              <div key={id}>
                 <a
                   id={`footer-link-${id}`}
                   href={href}

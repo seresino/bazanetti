@@ -31,7 +31,7 @@ function GalleryAsset({
         <iframe
           src={embed}
           title={alt}
-          className="w-full aspect-video border-0"
+          className="w-full aspect-video border border-black"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
@@ -40,7 +40,7 @@ function GalleryAsset({
     return (
       <video
         src={url}
-        className="w-full h-auto"
+        className="w-full h-auto border border-black"
         autoPlay
         muted
         loop
@@ -49,7 +49,14 @@ function GalleryAsset({
       />
     );
   }
-  return <img src={url} alt={alt} className="w-full h-auto" loading="lazy" />;
+  return (
+    <img
+      src={url}
+      alt={alt}
+      className="w-full h-auto border border-black"
+      loading="lazy"
+    />
+  );
 }
 
 // Per-item width/offset cycle so the gallery reads scattered rather than gridded
@@ -85,7 +92,7 @@ export function ProjectDetailView({ project, onBack }: ProjectDetailViewProps) {
         <img
           src={project.heroImage}
           alt={project.title}
-          className="h-screen w-full object-cover"
+          className="max-h-screen max-w-full w-auto h-auto object-contain border border-black"
         />
       </div>
 

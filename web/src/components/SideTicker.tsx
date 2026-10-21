@@ -3,9 +3,10 @@ import { useBrand } from "../context/BrandContext";
 
 interface SideTickerProps {
   side: "right" | "left";
+  hasHeader?: boolean;
 }
 
-export function SideTicker({ side }: SideTickerProps) {
+export function SideTicker({ side, hasHeader = false }: SideTickerProps) {
   const { brand } = useBrand();
   const containerRef = React.useRef<HTMLDivElement>(null);
   const unitRef = React.useRef<HTMLDivElement>(null);
@@ -38,11 +39,13 @@ export function SideTicker({ side }: SideTickerProps) {
       aria-hidden="true"
       className="hidden lg:block relative w-11 shrink-0 self-stretch select-none pointer-events-none z-20 bg-white"
     >
-      {/* Absolutely positioned so the repeating content can't inflate the
-          rail's own height (which would loop forever). */}
+      {/* Sticky viewport-height rail inside the full-height aside: pinned
+          while scrolling, pushed up when the footer arrives */}
       <div
         ref={containerRef}
-        className="absolute inset-0 py-6 overflow-hidden flex flex-col items-center gap-8"
+        className={`sticky py-6 overflow-hidden flex flex-col items-center gap-8 ${
+          hasHeader ? "top-[100px] h-[calc(100vh-100px)]" : "top-0 h-screen"
+        }`}
       >
         {Array.from({ length: repeatCount }, (_, i) => (
           <div

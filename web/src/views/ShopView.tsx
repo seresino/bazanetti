@@ -15,7 +15,6 @@ export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("M");
-  const [imageIndex, setImageIndex] = useState(0);
 
   useEffect(() => {
     fetchShopifyProducts().then((res) => {
@@ -100,7 +99,6 @@ export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
               onClick={() => {
                 setSelectedProduct(product);
                 setSelectedSize(product.sizes[1] || product.sizes[0] || "M");
-                setImageIndex(0);
               }}
               className="group relative border-b border-r border-dashed border-black/40 max-sm:border-r-0 sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(4n)]:border-r-0 bg-white flex flex-col justify-between cursor-pointer transition-colors"
             >
@@ -144,46 +142,24 @@ export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
             </button>
 
             <div className="grid grid-cols-1 md:grid-cols-2">
-              {/* Left: image carousel */}
-              <div className="relative flex items-center justify-center p-10 md:p-16 min-h-[40vh] md:min-h-[70vh]">
-                {productImages.length > 1 && (
-                  <button
-                    onClick={() =>
-                      setImageIndex(
-                        (imageIndex - 1 + productImages.length) %
-                          productImages.length,
-                      )
-                    }
-                    className="absolute left-2 top-1/2 -translate-y-1/2 p-3 hover:opacity-50 cursor-pointer"
-                    aria-label="Previous image"
-                  >
-                    <img
-                      src="/images/ui/arrow.png"
-                      alt=""
-                      className="h-6 w-auto"
-                    />
-                  </button>
-                )}
-                <img
-                  src={productImages[imageIndex] || selectedProduct.image}
-                  alt={selectedProduct.name}
-                  className="max-h-[60vh] w-auto max-w-full object-contain"
-                />
-                {productImages.length > 1 && (
-                  <button
-                    onClick={() =>
-                      setImageIndex((imageIndex + 1) % productImages.length)
-                    }
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-3 hover:opacity-50 cursor-pointer"
-                    aria-label="Next image"
-                  >
-                    <img
-                      src="/images/ui/arrow.png"
-                      alt=""
-                      className="h-6 w-auto rotate-180"
-                    />
-                  </button>
-                )}
+              {/* Left: vertically scrolling image gallery */}
+              <div className="relative p-10 md:p-16 min-h-[40vh] md:min-h-[70vh]">
+                <div className="h-[40vh] md:h-[70vh] overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="flex flex-col gap-8">
+                    {productImages.map((src, i) => (
+                      <div
+                        key={src + i}
+                        className="h-[40vh] md:h-[70vh] shrink-0 snap-center flex items-center justify-center"
+                      >
+                        <img
+                          src={src}
+                          alt={`${selectedProduct.name} — ${i + 1}`}
+                          className="max-h-full max-w-full w-auto object-contain"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Right: details, dashed vertical divider */}
@@ -193,7 +169,7 @@ export function ShopView({ onAddToCart, onOpenCart }: ShopViewProps) {
                 </h3>
 
                 {detailLines.length > 0 && (
-                  <ul className="list-disc pl-5 space-y-1 text-xs md:text-sm font-haas text-black/90">
+                  <ul className="list-disc pl-5 space-y-1 text-xs md:text-sm font-haas uppercase text-black/90">
                     {detailLines.map((line, i) => (
                       <li key={i}>{line}</li>
                     ))}

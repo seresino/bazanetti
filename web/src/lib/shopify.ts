@@ -31,6 +31,34 @@ function tagValue(tags: string[], keys: string[]): string {
 
 const numericVariantId = (gid: string) => gid.split("/").pop() || gid;
 
+// Shopify's plain `description` flattens rich-text lists into one paragraph;
+// parse descriptionHtml so bullet lists survive as newline-separated lines
+function descriptionToLines(html: string, fallback: string): string {
+  const splitLines = (text: string) =>
+    text
+      .split(/\n+/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join("\n");
+  if (!html) return splitLines(fallback || "");
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const items = Array.from(doc.querySelectorAll("li"))
+      .map((li) => li.textContent?.trim())
+      .filter(Boolean);
+    if (items.length) return items.join("\n");
+    // No list markup — honour <br> and block-level breaks
+    const withBreaks = doc.body.innerHTML
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(p|div|h[1-6]|ul|ol)>/gi, "\n");
+    const text = new DOMParser().parseFromString(withBreaks, "text/html").body
+      .textContent;
+    return splitLines(text || fallback || "");
+  } catch {
+    return splitLines(fallback || "");
+  }
+}
+
 export async function fetchShopifyProducts(): Promise<{
   products: Product[];
   error: string | null;
@@ -50,6 +78,7 @@ export async function fetchShopifyProducts(): Promise<{
           id
           title
           description
+          descriptionHtml
           tags
           featuredImage { url altText }
           images(first: 3) { edges { node { url altText } } }
@@ -139,7 +168,10 @@ export async function fetchShopifyProducts(): Promise<{
             "—",
           sizes,
           variantLabel,
-          description: node.description || "",
+          description: descriptionToLines(
+            node.descriptionHtml,
+            node.description,
+          ),
           inStock: variants.some((v) => v.availableForSale),
           variants,
         };

@@ -8,14 +8,14 @@ interface WorksViewProps {
 }
 
 const layoutPatterns = [
-  { colSpan: "md:col-span-4", aspect: "aspect-4/3" },
-  { colSpan: "md:col-span-5 md:row-span-2", aspect: "aspect-4/5" },
-  { colSpan: "md:col-span-3", aspect: "aspect-square" },
-  { colSpan: "md:col-span-3", aspect: "aspect-square" },
-  { colSpan: "md:col-span-4", aspect: "aspect-3/4" },
-  { colSpan: "md:col-span-5", aspect: "aspect-4/5" },
-  { colSpan: "md:col-span-6 md:row-span-2", aspect: "aspect-3/4" },
-  { colSpan: "md:col-span-5", aspect: "aspect-square" },
+  { colSpan: "md:col-span-4" },
+  { colSpan: "md:col-span-5" },
+  { colSpan: "md:col-span-3" },
+  { colSpan: "md:col-span-3" },
+  { colSpan: "md:col-span-4" },
+  { colSpan: "md:col-span-5" },
+  { colSpan: "md:col-span-6" },
+  { colSpan: "md:col-span-5" },
 ];
 
 export function WorksView({ onSelectProject }: WorksViewProps) {
@@ -96,18 +96,16 @@ export function WorksView({ onSelectProject }: WorksViewProps) {
                   onClick={() => onSelectProject(project)}
                   className={`${pattern.colSpan} group cursor-pointer space-y-3`}
                 >
-                  <div
-                    className={`relative ${pattern.aspect} overflow-hidden border border-black/10 bg-white`}
-                  >
+                  <div className="relative overflow-hidden bg-white">
                     {project.coverImage ? (
                       <img
                         src={project.coverImage}
                         alt={project.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-auto block border border-black transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-white text-center font-mono text-xs">
+                      <div className="w-full aspect-square flex flex-col items-center justify-center p-4 bg-white text-center font-mono text-xs">
                         <span className="font-bold">{project.title}</span>
                         <span className="text-[10px] text-neutral-500 mt-1">
                           [No image uploaded in Sanity]
