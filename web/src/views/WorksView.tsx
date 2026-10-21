@@ -7,15 +7,19 @@ interface WorksViewProps {
   onSelectProject: (project: Project) => void;
 }
 
+// Loose editorial scatter — varied spans pinned to explicit columns with
+// non-monotonic offsets (some pulled up into whitespace) so the layout
+// reads random rather than snaking
 const layoutPatterns = [
-  { colSpan: "md:col-span-4" },
-  { colSpan: "md:col-span-5" },
-  { colSpan: "md:col-span-3" },
-  { colSpan: "md:col-span-3" },
-  { colSpan: "md:col-span-4" },
-  { colSpan: "md:col-span-5" },
-  { colSpan: "md:col-span-6" },
-  { colSpan: "md:col-span-5" },
+  { colStart: "md:col-start-2", colSpan: "md:col-span-3", offset: "" },
+  { colStart: "md:col-start-6", colSpan: "md:col-span-4", offset: "md:mt-40" },
+  { colStart: "md:col-start-11", colSpan: "md:col-span-2", offset: "md:mt-12" },
+  { colStart: "md:col-start-1", colSpan: "md:col-span-2", offset: "md:mt-64" },
+  { colStart: "md:col-start-4", colSpan: "md:col-span-3", offset: "md:-mt-16" },
+  { colStart: "md:col-start-9", colSpan: "md:col-span-3", offset: "md:mt-24" },
+  { colStart: "md:col-start-2", colSpan: "md:col-span-2", offset: "md:mt-48" },
+  { colStart: "md:col-start-6", colSpan: "md:col-span-2", offset: "md:-mt-8" },
+  { colStart: "md:col-start-8", colSpan: "md:col-span-4", offset: "md:mt-16" },
 ];
 
 export function WorksView({ onSelectProject }: WorksViewProps) {
@@ -84,7 +88,7 @@ export function WorksView({ onSelectProject }: WorksViewProps) {
 
         {/* The Grid: Rendered strictly with live Sanity data */}
         {!loading && !error && projects.length > 0 && (
-          <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 lg:gap-10 items-start">
+          <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-x-8 md:gap-x-12 gap-y-16 md:gap-y-24 items-start">
             {projects.map((project, index) => {
               const pattern = layoutPatterns[index % layoutPatterns.length];
               const client = project.client || "[Untitled]";
@@ -94,7 +98,7 @@ export function WorksView({ onSelectProject }: WorksViewProps) {
                   key={project.id}
                   id={`work-item-${project.id}`}
                   onClick={() => onSelectProject(project)}
-                  className={`${pattern.colSpan} group cursor-pointer space-y-3`}
+                  className={`${pattern.colStart} ${pattern.colSpan} ${pattern.offset} group cursor-pointer space-y-3`}
                 >
                   <div className="relative overflow-hidden bg-white">
                     {project.coverImage ? (

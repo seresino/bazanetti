@@ -20,6 +20,12 @@ export default defineConfig({
               .id('brandSettings')
               .child(S.document().schemaType('brandSettings').documentId('brandSettings')),
             S.divider(),
+            // Singleton for Shop Info (returns / shipping / sizing)
+            S.listItem()
+              .title('Shop Info')
+              .id('shopInfo')
+              .child(S.document().schemaType('shopInfo').documentId('shopInfo')),
+            S.divider(),
             // Regular document lists for Works and Vault
             S.documentTypeListItem('work').title('Works & Projects'),
             S.documentTypeListItem('vaultItem').title('Vault Pieces'),

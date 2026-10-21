@@ -59,12 +59,18 @@ function GalleryAsset({
   );
 }
 
-// Per-item width/offset cycle so the gallery reads scattered rather than gridded
+// Scattered editorial placement — explicit column starts, varied spans,
+// non-monotonic offsets (some pulled up into whitespace) so the layout
+// reads random rather than snaking
 const SCATTER = [
-  "w-[80%]",
-  "w-[65%] ml-auto",
-  "w-[55%]",
-  "w-[70%] ml-auto md:mt-16",
+  { colStart: "md:col-start-1", colSpan: "md:col-span-5", offset: "" },
+  { colStart: "md:col-start-8", colSpan: "md:col-span-4", offset: "md:mt-40" },
+  { colStart: "md:col-start-3", colSpan: "md:col-span-3", offset: "md:mt-8" },
+  { colStart: "md:col-start-7", colSpan: "md:col-span-5", offset: "md:-mt-20" },
+  { colStart: "md:col-start-1", colSpan: "md:col-span-3", offset: "md:mt-56" },
+  { colStart: "md:col-start-10", colSpan: "md:col-span-3", offset: "md:mt-12" },
+  { colStart: "md:col-start-5", colSpan: "md:col-span-4", offset: "md:-mt-12" },
+  { colStart: "md:col-start-2", colSpan: "md:col-span-5", offset: "md:mt-32" },
 ];
 
 interface ProjectDetailViewProps {
@@ -117,17 +123,20 @@ export function ProjectDetailView({ project, onBack }: ProjectDetailViewProps) {
         </div>
       </div>
 
-      {/* Full gallery: loose 2-col masonry with scattered widths/offsets —
-          natural aspect ratios preserved, editorial "random" spacing */}
-      <div className="columns-1 sm:columns-2 gap-12 md:gap-16 my-12">
-        {project.detailMedia.map((media, i) => (
-          <div
-            key={i}
-            className={`break-inside-avoid mb-14 md:mb-20 bg-white ${SCATTER[i % SCATTER.length]}`}
-          >
-            <GalleryAsset media={media} alt={`${project.title} — ${i + 1}`} />
-          </div>
-        ))}
+      {/* Full gallery: scattered 12-col placements matching the Works grid —
+          natural aspect ratios preserved, generous whitespace */}
+      <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-x-8 md:gap-x-12 gap-y-16 md:gap-y-24 my-12 items-start">
+        {project.detailMedia.map((media, i) => {
+          const pattern = SCATTER[i % SCATTER.length];
+          return (
+            <div
+              key={i}
+              className={`${pattern.colStart} ${pattern.colSpan} ${pattern.offset} bg-white`}
+            >
+              <GalleryAsset media={media} alt={`${project.title} — ${i + 1}`} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

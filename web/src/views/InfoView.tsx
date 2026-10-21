@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { InterlockingRingsGraphic } from "../components/Icons";
 import { CheckCircle2 } from "lucide-react";
+import { TagButton } from "../components/TagButton";
 import { useBrand } from "../context/BrandContext";
 
 export function InfoMasthead() {
@@ -249,21 +250,15 @@ export function InfoView() {
               </p>
             )}
 
-            {/* Submit Button matching Desktop - Info.png */}
+            {/* Submit Button — same TagButton style as checkout/cart */}
             <div className="pt-6 flex justify-center">
-              <button
+              <TagButton
                 id="submit-order-form-button"
                 type="submit"
+                label={status === "submitting" ? "Submitting…" : "Submit"}
                 disabled={status === "submitting"}
-                className="cursor-pointer hover:opacity-80 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-wait"
-                aria-label="Submit order inquiry"
-              >
-                <img
-                  src="/emblems/submit.svg"
-                  alt={status === "submitting" ? "Submitting…" : "Submit"}
-                  className="h-12 w-auto"
-                />
-              </button>
+                className="disabled:cursor-wait"
+              />
             </div>
           </form>
         )}

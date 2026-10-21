@@ -1,6 +1,7 @@
 import React from "react";
 import { CartItem } from "../types";
 import { X, Trash2, ShieldCheck } from "lucide-react";
+import { TagButton } from "./TagButton";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -9,6 +10,8 @@ interface CartDrawerProps {
   onUpdateQuantity: (id: string, size: string, delta: number) => void;
   onRemoveItem: (id: string, size: string) => void;
   onCheckout: () => void;
+  note: string;
+  onNoteChange: (note: string) => void;
 }
 
 export function CartDrawer({
@@ -18,6 +21,8 @@ export function CartDrawer({
   onUpdateQuantity,
   onRemoveItem,
   onCheckout,
+  note,
+  onNoteChange,
 }: CartDrawerProps) {
   if (!isOpen) return null;
 
@@ -41,19 +46,9 @@ export function CartDrawer({
       >
         {/* Header */}
         <div className="p-6 border-b border-black/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src="/images/ui/tag-cart.png"
-              alt="Cart"
-              className="h-8 w-auto"
-            />
-            <span className="text-xl font-bold tracking-tight text-black">
-              ({items.reduce((sum, item) => sum + item.quantity, 0)})
-            </span>
-            <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 bg-white text-black">
-              Realised in London
-            </span>
-          </div>
+          <span className="text-xl font-bold tracking-tight uppercase text-black">
+            Cart
+          </span>
           <button
             id="cart-drawer-close"
             onClick={onClose}
@@ -64,7 +59,7 @@ export function CartDrawer({
         </div>
 
         {/* Item List */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 divide-y divide-black/5">
+        <div className="flex-1 overflow-y-auto p-6 divide-y divide-black/5">
           {items.length === 0 ? (
             <div className="text-center py-24 space-y-3">
               <p className="text-lg font-bold text-black/90">
@@ -78,7 +73,7 @@ export function CartDrawer({
             items.map((item, idx) => (
               <div
                 key={`${item.product.id}-${item.size}-${idx}`}
-                className="pt-6 first:pt-0 flex gap-4"
+                className="py-6 first:pt-0 flex gap-4"
               >
                 <img
                   src={item.product.image}
@@ -139,6 +134,25 @@ export function CartDrawer({
           )}
         </div>
 
+        {/* Order note — above the subtotal divider */}
+        {items.length > 0 && (
+          <div className="px-6 pt-4 pb-8">
+            <label
+              htmlFor="order-note"
+              className="text-[10px] font-black tracking-widest uppercase text-black/85 block mb-2"
+            >
+              Add a note to your order
+            </label>
+            <textarea
+              id="order-note"
+              value={note}
+              onChange={(e) => onNoteChange(e.target.value)}
+              rows={2}
+              className="w-full border border-black/30 focus:border-black outline-none p-3 text-xs font-haas font-normal text-black resize-none"
+            />
+          </div>
+        )}
+
         {/* Footer */}
         {items.length > 0 && (
           <div className="p-6 border-t border-black/10 bg-white space-y-4">
@@ -153,20 +167,15 @@ export function CartDrawer({
 
             <p className="text-[10px] text-black/75 tracking-wider uppercase flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-black" />
-              Includes London hallmark certificate &amp; bespoke gift box
+              Tax included and shipping calculated at checkout
             </p>
 
-            <button
+            <TagButton
               id="cart-checkout-button"
+              label="Checkout"
               onClick={onCheckout}
-              className="mx-auto block cursor-pointer hover:opacity-70 active:scale-[0.98] transition-all"
-            >
-              <img
-                src="/images/ui/tag-checkout.png"
-                alt="Proceed to Checkout"
-                className="h-14 w-auto"
-              />
-            </button>
+              className="mx-auto"
+            />
           </div>
         )}
       </aside>

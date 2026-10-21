@@ -75,7 +75,10 @@ function VaultTile({
             pointerEvents: "none",
             outline: "none",
           }}
-        />
+        >
+          {/* Empty slot replaces model-viewer's default top loading bar */}
+          <div slot="progress-bar" />
+        </model-viewer>
       ) : item.image ? (
         <img
           src={item.image}

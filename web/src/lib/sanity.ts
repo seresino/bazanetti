@@ -560,3 +560,56 @@ export async function fetchBrandSettings(): Promise<{
     };
   }
 }
+
+export interface RingSizeRow {
+  label: string;
+  uk: string;
+  usa: string;
+  eu: number;
+  circumferenceMm: number;
+  diameterMm: number;
+}
+
+export interface BraceletSizeRow {
+  size: string;
+  circumferenceInch: number;
+  circumferenceCm: number;
+}
+
+export interface NecklaceSizeRow {
+  size: string;
+  lengthInch: number;
+  lengthCm: number;
+}
+
+export interface ShopInfo {
+  returnsText: string;
+  shippingText: string;
+  sizingIntro: string;
+  ringSizes: RingSizeRow[];
+  braceletSizes: BraceletSizeRow[];
+  necklaceSizes: NecklaceSizeRow[];
+}
+
+// Returns / Shipping / Sizing content for the product modal
+export async function fetchShopInfo(): Promise<{
+  info: ShopInfo | null;
+  error: string | null;
+}> {
+  try {
+    const data = await sanityClient.fetch(
+      `*[_type == "shopInfo"][0] {
+        returnsText,
+        shippingText,
+        sizingIntro,
+        ringSizes[] { label, uk, usa, eu, circumferenceMm, diameterMm },
+        braceletSizes[] { size, circumferenceInch, circumferenceCm },
+        necklaceSizes[] { size, lengthInch, lengthCm }
+      }`,
+    );
+    return { info: data ?? null, error: null };
+  } catch (err: any) {
+    console.warn("[Sanity] Could not fetch shop info:", err);
+    return { info: null, error: err?.message || String(err) };
+  }
+}

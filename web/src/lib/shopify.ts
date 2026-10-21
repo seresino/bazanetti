@@ -185,7 +185,10 @@ export async function fetchShopifyProducts(): Promise<{
 }
 
 // Shopify cart permalinks open a prefilled cart on the store domain
-export function buildShopifyCartUrl(items: CartItem[]): string | null {
+export function buildShopifyCartUrl(
+  items: CartItem[],
+  note?: string,
+): string | null {
   if (!storeDomain) return null;
   const lines = items
     .map((item) => {
@@ -196,5 +199,6 @@ export function buildShopifyCartUrl(items: CartItem[]): string | null {
     })
     .filter(Boolean);
   if (lines.length === 0) return null;
-  return `https://${storeDomain}/cart/${lines.join(",")}`;
+  const query = note?.trim() ? `?note=${encodeURIComponent(note.trim())}` : "";
+  return `https://${storeDomain}/cart/${lines.join(",")}${query}`;
 }

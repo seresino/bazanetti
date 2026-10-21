@@ -108,6 +108,7 @@ export default function App() {
     return [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [orderNote, setOrderNote] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [swipeIn, setSwipeIn] = useState(false);
 
@@ -160,7 +161,7 @@ export default function App() {
   };
 
   const handleCheckout = () => {
-    const url = buildShopifyCartUrl(cartItems);
+    const url = buildShopifyCartUrl(cartItems, orderNote);
     if (!url) {
       showToast(
         shopifyConfigured()
@@ -276,6 +277,8 @@ export default function App() {
           onUpdateQuantity={handleUpdateQuantity}
           onRemoveItem={handleRemoveItem}
           onCheckout={handleCheckout}
+          note={orderNote}
+          onNoteChange={setOrderNote}
         />
 
         {/* Floating Notification Toast */}

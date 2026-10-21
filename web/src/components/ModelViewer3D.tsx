@@ -112,7 +112,10 @@ export function ModelViewer3D({ src, poster, title }: ModelViewer3DProps) {
           outline: "none",
           cursor: "grab",
         }}
-      />
+      >
+        {/* Empty slot replaces model-viewer's default top loading bar */}
+        <div slot="progress-bar" />
+      </model-viewer>
 
       {/* Floating Drag Hint (Fades out once user drags) */}
       {!hasInteracted && (
