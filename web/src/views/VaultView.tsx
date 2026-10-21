@@ -100,7 +100,6 @@ export function VaultView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEmpty, setIsEmpty] = useState(false);
-  const heroRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const loadData = useCallback(() => {
@@ -142,12 +141,11 @@ export function VaultView() {
   }, [items]);
 
   // Vertical wheel over the grid scrolls the items horizontally
-  // (scroll down = items travel left). Once the strip is exhausted,
-  // the wheel falls through to normal page scrolling.
+  // (scroll down = items travel left). Only hijacks the wheel while the
+  // cursor is over the strip itself — above/below it scrolls the page.
   useEffect(() => {
-    const zone = heroRef.current;
     const strip = gridRef.current;
-    if (!zone || !strip) return;
+    if (!strip) return;
 
     const onWheel = (e: WheelEvent) => {
       const delta =
@@ -161,8 +159,8 @@ export function VaultView() {
       }
     };
 
-    zone.addEventListener("wheel", onWheel, { passive: false });
-    return () => zone.removeEventListener("wheel", onWheel);
+    strip.addEventListener("wheel", onWheel, { passive: false });
+    return () => strip.removeEventListener("wheel", onWheel);
   }, []);
 
   return (
@@ -170,15 +168,14 @@ export function VaultView() {
       {/* Full page emblem design: the archive grid runs behind the emblem
           and scrolls horizontally when the wheel is used over it */}
       <section
-        ref={heroRef}
         aria-label="Vault archive"
-        className="relative w-full h-full min-h-0 flex items-center bg-white overflow-hidden overscroll-none select-none"
+        className="relative w-full min-h-[calc(100vh-73px)] flex items-center bg-white overflow-hidden select-none"
       >
         {/* Horizontally scrolling two-row strip of vault items */}
         <div
           ref={gridRef}
           id="vault-archive-grid"
-          className="w-full overflow-x-auto overflow-y-hidden py-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="w-full overflow-x-auto overflow-y-hidden py-6 -translate-y-4 md:-translate-y-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {loading && (
             <div className="w-full py-24 text-center text-xs font-bold uppercase tracking-wider text-black/50">
@@ -232,7 +229,7 @@ export function VaultView() {
                 behavior: "smooth",
               })
             }
-            className="h-20 sm:h-[88px] md:h-[104px] w-auto pointer-events-auto hover:cursor-pointer"
+            className="h-14 sm:h-[88px] md:h-[104px] w-auto pointer-events-auto hover:cursor-pointer"
           />
         </div>
       </section>
@@ -269,10 +266,13 @@ export function VaultView() {
               )}
             </div>
 
-            <div className="border-t border-dashed border-black/40 px-6 py-4">
+            <div className="border-t border-dashed border-black/40 px-6 py-4 flex items-baseline justify-between gap-4">
               <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black">
                 {activeItem.title}
               </h3>
+              <span className="font-mono text-xs text-black/60 shrink-0">
+                {activeItem.year}
+              </span>
             </div>
           </div>
         </div>

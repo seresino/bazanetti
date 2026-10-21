@@ -199,11 +199,7 @@ export default function App() {
       <div
         className={`relative bg-white text-black selection:bg-black selection:text-white flex flex-col justify-between ${
           swipeIn ? "animate-page-swipe-up " : ""
-        }${
-          // Vault fills exactly one viewport (header + grid + footer) so the
-          // wheel can drive the archive horizontally without any vertical scroll
-          activeTab === "vault" ? "h-screen overflow-hidden" : "min-h-screen"
-        }`}
+        }min-h-screen`}
       >
         {/* 1. Header: Full width across screen, only on shop, works, vault, info, project */}
         {showHeader && (

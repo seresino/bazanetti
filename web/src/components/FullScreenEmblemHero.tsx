@@ -29,7 +29,7 @@ export function FullScreenEmblemHero({
         alt={label}
         onClick={handleScrollToContent}
         draggable={false}
-        className="h-20 sm:h-[88px] md:h-[104px] w-auto select-none hover:cursor-pointer"
+        className="h-14 sm:h-[88px] md:h-[104px] w-auto select-none hover:cursor-pointer"
       />
     </section>
   );

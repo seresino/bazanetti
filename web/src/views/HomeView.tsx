@@ -51,7 +51,7 @@ export function HomeView({ onSelectTab }: HomeViewProps) {
                   alt={label}
                   className="block w-auto h-auto max-w-full max-h-full"
                 />
-                <span className="absolute left-1/2 bottom-[-30%] md:bottom-[-40%] -translate-x-1/2 mix-blend-difference text-white text-3xl sm:text-4xl md:text-5xl font-bold lowercase tracking-tight pointer-events-none select-none">
+                <span className="absolute left-1/2 bottom-[-30%] md:bottom-[-40%] -translate-x-1/2 mix-blend-difference text-white text-3xl sm:text-4xl md:text-5xl font-bold lowercase tracking-tight pointer-events-none select-none group-hover:opacity-0 transition-opacity duration-200">
                   {label}
                 </span>
               </span>

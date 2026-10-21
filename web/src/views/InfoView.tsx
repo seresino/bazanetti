@@ -100,12 +100,20 @@ export function InfoView() {
     <div className="w-full px-4 sm:px-6 py-6 space-y-16 animate-fade-in">
       {/* Brand Bio & EST.2021 Statement: 2-row, 3-column grid matching Desktop - Info.png */}
       <div className="grid sm:grid-cols-[1fr_2fr_1fr] items-center gap-y-20 py-8">
-        {/* Row 1, Col 1: intentionally empty */}
-        <div className="hidden sm:block" />
+        {/* Row 1, Col 1: monogram emblem — mirrors the rings mark on the right */}
+        <div className="hidden sm:flex items-end justify-center">
+          {brand.monogramEmblem && (
+            <img
+              src={brand.monogramEmblem}
+              alt="Bazanetti monogram"
+              className="h-14 w-auto hover:scale-105 transition-transform"
+            />
+          )}
+        </div>
 
-        {/* Row 1, Col 2: brand bio */}
-        <div className="text-center">
-          <p className="text-xs md:text-sm font-haas font-bold leading-relaxed text-black/90 whitespace-pre-line">
+        {/* Row 1, Col 2: brand bio — left-justified, Neue Haas regular */}
+        <div className="text-left">
+          <p className="text-xs md:text-sm font-haas font-normal leading-relaxed text-black/90 whitespace-pre-line">
             {brand.bioText ||
               "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat."}
           </p>
@@ -168,7 +176,7 @@ export function InfoView() {
       >
         <div className="text-center space-y-4">
           <h3 className="text-4xl md:text-5xl font-black text-black tracking-wider uppercase">
-            ORDER FORM
+            ENQUIRY FORM
           </h3>
         </div>
 
@@ -181,7 +189,7 @@ export function InfoView() {
             <p className="text-xs text-black/85 leading-relaxed">
               Thank you,{" "}
               <strong className="text-black">{formData.fullName}</strong>. Your
-              order form has been submitted.
+              enquiry has been submitted.
             </p>
             <button
               onClick={() => {
